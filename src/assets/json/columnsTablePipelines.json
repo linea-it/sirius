@@ -1,0 +1,30 @@
+[
+    {
+        "field": "display_name", 
+        "header": "Pipeline Name"
+    },
+    {
+        "field": "name", 
+        "header": "Name"
+    },
+    {
+        "field": "version_date", 
+        "header": "Version Date"
+    },
+    {
+        "field": "owner", 
+        "header": "Owner"
+    },
+    {
+        "field": "group", 
+        "header": "Group"
+    },
+    {
+        "field": "stage", 
+        "header": "Stage"
+    },
+    {
+        "field": "readme", 
+        "header": "Readme"
+    }
+]

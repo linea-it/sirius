@@ -1,0 +1,26 @@
+[
+    {
+        "field": "display_name", 
+        "header": "Name"
+    },
+    {
+        "field": "name", 
+        "header": "Class"
+    },
+    {
+        "field": "version", 
+        "header": "Version"
+    },
+    {
+        "field": "pipelines", 
+        "header": "Pipelines"
+    },
+    {
+        "field": "owner", 
+        "header": "Owner"
+    },
+    {
+        "field": "module_id", 
+        "header": "Module"
+    }
+]

@@ -1,0 +1,10 @@
+version: "3.6"
+services:
+  user-interfaces:
+    build: .
+    working_dir: /src/app
+    ports:
+      - 5000:5000
+    command: sh entrypoint.sh
+    volumes:
+      - ./entrypoint.sh:/src/app/entrypoint.sh
