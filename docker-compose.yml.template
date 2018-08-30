@@ -3,8 +3,10 @@ services:
   user-interfaces:
     build: .
     working_dir: /src/app
+    environment:
+      - PORT=7001
     ports:
-      - 5000:5000
+      - 7001:7001
     command: sh entrypoint.sh
     volumes:
       - ./entrypoint.sh:/src/app/entrypoint.sh
