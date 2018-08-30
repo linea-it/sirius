@@ -17,17 +17,17 @@ import 'primeicons/primeicons.css';
 import registerServiceWorker from './registerServiceWorker';
 
 ReactDOM.render(
-    <Router history={browserHistory}>
-        <Route path='/' component={App} >
-            <Route component={UserInterfaces}>
-                <Redirect from="/UserInterfaces" to="/Pipelines" /> 
-                <Route path='/Pipelines' component={Pipelines}/>
-                <Route path='/Components' component={Components} />
-                <Route path='/Classes' component={Classes} />
-                <Route path='/Packages' component={Packages} />
-            </Route>                      
-        </Route>
-    </Router>,
-    document.getElementById('root')
+  <Router history={browserHistory}>
+    <Route path="/" component={App}>
+      <Route component={UserInterfaces}>
+        <Redirect from="/UserInterfaces" to="/Pipelines" />
+        <Route path="/Pipelines" component={Pipelines} />
+        <Route path="/Components" component={Components} />
+        <Route path="/Classes" component={Classes} />
+        <Route path="/Packages" component={Packages} />
+      </Route>
+    </Route>
+  </Router>,
+  document.getElementById('root')
 );
 registerServiceWorker();
