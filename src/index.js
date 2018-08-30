@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, browserHistory, Redirect } from 'react-router';
+import { Router, Route } from 'react-router';
+
+import createHistory from 'history/createBrowserHistory';
 
 import App from './containers/App';
 import UserInterfaces from './containers/UserInterfaces';
@@ -16,17 +18,18 @@ import 'primeicons/primeicons.css';
 
 import registerServiceWorker from './registerServiceWorker';
 
+const history = createHistory();
+
 ReactDOM.render(
-  <Router history={browserHistory}>
-    <Route path="/" component={App}>
-      <Route component={UserInterfaces}>
-        <Redirect from="/UserInterfaces" to="/Pipelines" />
+  <Router history={history}>
+    <UserInterfaces>
+      <App>
         <Route path="/Pipelines" component={Pipelines} />
         <Route path="/Components" component={Components} />
         <Route path="/Classes" component={Classes} />
         <Route path="/Packages" component={Packages} />
-      </Route>
-    </Route>
+      </App>
+    </UserInterfaces>
   </Router>,
   document.getElementById('root')
 );
