@@ -24,10 +24,22 @@ ReactDOM.render(
   <Router history={history}>
     <UserInterfaces>
       <App>
-        <Route path="/Pipelines" component={Pipelines} />
-        <Route path="/Components" component={Components} />
-        <Route path="/Classes" component={Classes} />
-        <Route path="/Packages" component={Packages} />
+        <Route
+          path={`${process.env.REACT_APP_URL_PREFIX}/Pipelines`}
+          component={Pipelines}
+        />
+        <Route
+          path={`${process.env.REACT_APP_URL_PREFIX}/Components`}
+          component={Components}
+        />
+        <Route
+          path={`${process.env.REACT_APP_URL_PREFIX}/Classes`}
+          component={Classes}
+        />
+        <Route
+          path={`${process.env.REACT_APP_URL_PREFIX}/Packages`}
+          component={Packages}
+        />
       </App>
     </UserInterfaces>
   </Router>,
