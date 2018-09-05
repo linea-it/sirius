@@ -1,8 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route } from 'react-router';
-
-import createHistory from 'history/createBrowserHistory';
+import { BrowserRouter, Route } from 'react-router-dom';
 
 import App from './containers/App';
 import UserInterfaces from './containers/UserInterfaces';
@@ -17,32 +15,18 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
 import registerServiceWorker from './registerServiceWorker';
-
-const history = createHistory();
-
+require('dotenv').config();
 ReactDOM.render(
-  <Router history={history}>
-    <UserInterfaces>
-      <App>
-        <Route
-          path={`${process.env.REACT_APP_URL_PREFIX}/Pipelines`}
-          component={Pipelines}
-        />
-        <Route
-          path={`${process.env.REACT_APP_URL_PREFIX}/Components`}
-          component={Components}
-        />
-        <Route
-          path={`${process.env.REACT_APP_URL_PREFIX}/Classes`}
-          component={Classes}
-        />
-        <Route
-          path={`${process.env.REACT_APP_URL_PREFIX}/Packages`}
-          component={Packages}
-        />
-      </App>
-    </UserInterfaces>
-  </Router>,
+  <BrowserRouter basename={process.env.REACT_APP_PUBLIC_URL}>
+    <App>
+      <UserInterfaces>
+        <Route path={`/Pipelines`} component={Pipelines} />
+        <Route path={`/Components`} component={Components} />
+        <Route path={`/Classes`} component={Classes} />
+        <Route path={`/Packages`} component={Packages} />
+      </UserInterfaces>
+    </App>
+  </BrowserRouter>,
   document.getElementById('root')
 );
 registerServiceWorker();
