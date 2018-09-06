@@ -3,5 +3,6 @@ if [ $DEV = "true" ]; then
   yarn --pure-lockfile --ignore-optional
   yarn start
 else
-  yarn run serve -s build -l $PORT
+  yarn --pure-lockfile --ignore-optional
+  yarn build
 fi
