@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, browserHistory, Redirect } from 'react-router';
+import { BrowserRouter, Route } from 'react-router-dom';
 
 import App from './containers/App';
 import UserInterfaces from './containers/UserInterfaces';
@@ -15,19 +15,18 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
 import registerServiceWorker from './registerServiceWorker';
-
+require('dotenv').config();
 ReactDOM.render(
-  <Router history={browserHistory}>
-    <Route path="/" component={App}>
-      <Route component={UserInterfaces}>
-        <Redirect from="/UserInterfaces" to="/Pipelines" />
-        <Route path="/Pipelines" component={Pipelines} />
-        <Route path="/Components" component={Components} />
-        <Route path="/Classes" component={Classes} />
-        <Route path="/Packages" component={Packages} />
-      </Route>
-    </Route>
-  </Router>,
+  <BrowserRouter basename={process.env.REACT_APP_PUBLIC_URL}>
+    <App>
+      <UserInterfaces>
+        <Route path={`/Pipelines`} component={Pipelines} />
+        <Route path={`/Components`} component={Components} />
+        <Route path={`/Classes`} component={Classes} />
+        <Route path={`/Packages`} component={Packages} />
+      </UserInterfaces>
+    </App>
+  </BrowserRouter>,
   document.getElementById('root')
 );
 registerServiceWorker();
