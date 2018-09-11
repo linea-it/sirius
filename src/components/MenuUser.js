@@ -5,7 +5,7 @@ const MenuUser = () => {
   return (
     <ul className="navbar-nav float-right">
       <li className="nav-item">
-        <Link to="/" activeClassName="active" className="nav-link">
+        <Link to="/" className="nav-link">
           User Name
         </Link>
       </li>

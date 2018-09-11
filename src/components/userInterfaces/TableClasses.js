@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { MultiSelect } from 'primereact/multiselect';
 //import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-
+import Lokka from 'lokka';
+import Transport from 'lokka-transport-http';
 import columnsTableClasses from '../../assets/json/columnsTableClasses.json';
 
-const URL = 'http://devel2.linea.gov.br/~singulani/classes.json';
+const client = new Lokka({
+  transport: new Transport(process.env.REACT_APP_GRAPHQL_API),
+});
 
 export default class TableClasses extends Component {
   constructor() {
@@ -24,7 +26,7 @@ export default class TableClasses extends Component {
       rows: 20,
       totalRecords: 0,
       rowsPerPageOptions: [5, 10, 20],
-      itens: URL,
+      items: [],
     };
 
     this.colOptionsClasses = [];
@@ -32,30 +34,47 @@ export default class TableClasses extends Component {
     for (const col of columnsClasses) {
       this.colOptionsClasses.push({ label: col.header, value: col });
     }
-
-    this.onColumnToggleClasses = this.onColumnToggleClasses.bind(this);
   }
 
-  onColumnToggleClasses(event) {
+  onColumnToggleClasses = event => {
     this.setState({ colsClasses: event.value });
-  }
+  };
+
+  fetchData = async () => {
+    const classes = await client.query(
+      `
+      {
+        productClassList{
+          edges{
+            node{
+              displayName
+              className
+              productType{
+                typeName
+                displayName
+              }
+            }
+          }
+        }
+      }
+  `
+    );
+    const items = classes.productClassList.edges.map(item => {
+      return {
+        className: item.node.className,
+        displayClass: item.node.displayName,
+        typeName: item.node.productType.typeName,
+        displayType: item.node.productType.displayName,
+      };
+    });
+    this.setState({ items, loading: false });
+  };
 
   componentDidMount() {
     this.setState({
       loading: true,
     });
-
-    axios
-      .get(URL)
-      .then(response =>
-        this.setState({
-          itens: response.data,
-          loading: false,
-        })
-      )
-      .catch(() => {
-        console.log('Erro ao recuperar os dados');
-      });
+    this.fetchData();
   }
 
   render() {
@@ -92,7 +111,7 @@ export default class TableClasses extends Component {
     return (
       <DataTable
         header={header}
-        value={this.state.itens}
+        value={this.state.items}
         resizableColumns={true}
         columnResizeMode="expand"
         reorderableColumns={true}

@@ -25,7 +25,7 @@ class UserInterfaces extends Component {
 }
 
 UserInterfaces.propTypes = {
-  children: Proptypes.string.isRequired,
+  children: Proptypes.array.isRequired,
 };
 
 export default UserInterfaces;
