@@ -24,7 +24,7 @@ export default class TableClasses extends Component {
       rows: 20,
       totalRecords: 0,
       rowsPerPageOptions: [5, 10, 20],
-      itens: URL,
+      itens: [URL],
     };
 
     this.colOptionsClasses = [];
