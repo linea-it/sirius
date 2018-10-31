@@ -1,15 +1,12 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+import Centaurus from '../../api';
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { MultiSelect } from 'primereact/multiselect';
-//import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 
 import columnsTableClasses from '../../assets/json/columnsTableClasses.json';
-
-const URL = 'http://devel2.linea.gov.br/~singulani/classes.json';
 
 export default class TableClasses extends Component {
   constructor() {
@@ -21,10 +18,10 @@ export default class TableClasses extends Component {
       globalFilter: null,
       loading: false,
       first: 0,
-      rows: 20,
+      numberRows: 20,
       totalRecords: 0,
       rowsPerPageOptions: [5, 10, 20],
-      itens: [URL],
+      rows: [],
     };
 
     this.colOptionsClasses = [];
@@ -45,18 +42,28 @@ export default class TableClasses extends Component {
       loading: true,
     });
 
-    axios
-      .get(URL)
-      .then(response =>
-        this.setState({
-          itens: response.data,
-          loading: false,
-        })
-      )
-      .catch(() => {
-        console.log('Erro ao recuperar os dados');
-      });
+    this.loadClasses();
   }
+
+  loadClasses = async () => {
+    const classes = await Centaurus.getAllClasses();
+    if (classes && classes.productClassList && classes.productClassList.edges) {
+      const rows = classes.productClassList.edges.map(e => {
+        return {
+          displayName: e.node.displayName,
+          className: e.node.className,
+          typeName: e.node.productType.typeName,
+          typeDisplayName: e.node.productType.displayName,
+        };
+      });
+      this.setState({
+        rows,
+        loading: false,
+      });
+    } else {
+      this.setState({ loading: false });
+    }
+  };
 
   render() {
     const header = (
@@ -92,7 +99,7 @@ export default class TableClasses extends Component {
     return (
       <DataTable
         header={header}
-        value={this.state.itens}
+        value={this.state.rows}
         resizableColumns={true}
         columnResizeMode="expand"
         reorderableColumns={true}
@@ -105,7 +112,7 @@ export default class TableClasses extends Component {
         paginator={true}
         //paginatorLeft={paginatorLeft}
         //paginatorRight={paginatorRight}
-        rows={this.state.rows}
+        rows={this.state.numberRows}
         rowsPerPageOptions={this.state.rowsPerPageOptions}
         totalRecords={this.state.totalRecords}
         loading={this.state.loading}
