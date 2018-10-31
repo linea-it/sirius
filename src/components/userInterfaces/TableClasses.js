@@ -52,8 +52,10 @@ export default class TableClasses extends Component {
         return {
           displayName: e.node.displayName,
           className: e.node.className,
-          typeName: e.node.productType.typeName,
-          typeDisplayName: e.node.productType.displayName,
+          typeName: e.node.productType ? e.node.productType.typeName : null,
+          typeDisplayName: e.node.productType
+            ? e.node.productType.displayName
+            : null,
         };
       });
       this.setState({

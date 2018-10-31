@@ -54,12 +54,12 @@ export default class TableComponents extends Component {
     ) {
       const rows = components.pipelinesModulesList.edges.map(e => {
         return {
-          pipeline: e.node.pipeline.displayName,
-          displayName: e.node.module.displayName,
-          moduleId: e.node.module.moduleId,
-          owner: e.node.module.user.displayName,
-          version: e.node.module.version,
-          name: e.node.module.name,
+          pipeline: e.node.pipeline ? e.node.pipeline.displayName : null,
+          displayName: e.node.module ? e.node.module.displayName : null,
+          moduleId: e.node.module ? e.node.module.moduleId : null,
+          owner: e.node.module ? e.node.module.user.displayName : null,
+          version: e.node.module ? e.node.module.version : null,
+          name: e.node.module ? e.node.module.name : null,
         };
       });
       this.setState({

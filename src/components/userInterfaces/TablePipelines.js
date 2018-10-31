@@ -54,11 +54,11 @@ export default class TablePipelines extends Component {
         return {
           displayName: e.node.displayName,
           name: e.node.name,
-          owner: e.node.user.displayName,
+          owner: e.node.user ? e.node.user.displayName : null,
           versionDate: e.node.versionDate,
-          stage: e.node.pipelineStage.displayName,
+          stage: e.node.pipelineStage ? e.node.pipelineStage.displayName : null,
           readme: e.node.readme,
-          group: e.node.group.displayName,
+          group: e.node.group ? e.node.group.displayName : null,
         };
       });
       this.setState({
