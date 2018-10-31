@@ -57,7 +57,11 @@ export default class TableComponents extends Component {
           pipeline: e.node.pipeline ? e.node.pipeline.displayName : null,
           displayName: e.node.module ? e.node.module.displayName : null,
           moduleId: e.node.module ? e.node.module.moduleId : null,
-          owner: e.node.module ? e.node.module.user.displayName : null,
+          owner: e.node.module
+            ? e.node.module.user
+              ? e.node.module.user.displayName
+              : null
+            : null,
           version: e.node.module ? e.node.module.version : null,
           name: e.node.module ? e.node.module.name : null,
         };
