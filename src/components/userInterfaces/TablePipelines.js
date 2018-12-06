@@ -1,16 +1,12 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+import Centaurus from '../../api';
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { MultiSelect } from 'primereact/multiselect';
-//import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 
 import columnsTablePipelines from '../../assets/json/columnsTablePipelines.json';
-//import dataTablePipelines from '../../assets/json/dataTablePipelines.json';
-
-const URL = 'http://devel2.linea.gov.br/~singulani/pipelines.json';
 
 export default class TablePipelines extends Component {
   constructor() {
@@ -22,10 +18,10 @@ export default class TablePipelines extends Component {
       globalFilter: null,
       loading: false,
       first: 0,
-      rows: 20,
+      numberRows: 20,
       totalRecords: 0,
       rowsPerPageOptions: [5, 10, 20],
-      itens: URL,
+      rows: [],
     };
 
     this.colOptionsPipelines = [];
@@ -48,18 +44,31 @@ export default class TablePipelines extends Component {
       loading: true,
     });
 
-    axios
-      .get(URL)
-      .then(response =>
-        this.setState({
-          itens: response.data,
-          loading: false,
-        })
-      )
-      .catch(() => {
-        console.log('Erro ao recuperar os dados');
-      });
+    this.loadPipelines();
   }
+
+  loadPipelines = async () => {
+    const pipelines = await Centaurus.getAllPipelines();
+    if (pipelines && pipelines.pipelinesList && pipelines.pipelinesList.edges) {
+      const rows = pipelines.pipelinesList.edges.map(e => {
+        return {
+          displayName: e.node.displayName,
+          name: e.node.name,
+          owner: e.node.user ? e.node.user.displayName : null,
+          versionDate: e.node.versionDate,
+          stage: e.node.pipelineStage ? e.node.pipelineStage.displayName : null,
+          readme: e.node.readme,
+          group: e.node.group ? e.node.group.displayName : null,
+        };
+      });
+      this.setState({
+        rows,
+        loading: false,
+      });
+    } else {
+      this.setState({ loading: false });
+    }
+  };
 
   render() {
     const header = (
@@ -95,7 +104,7 @@ export default class TablePipelines extends Component {
     return (
       <DataTable
         header={header}
-        value={this.state.itens}
+        value={this.state.rows}
         resizableColumns={true}
         columnResizeMode="expand"
         reorderableColumns={true}
@@ -108,7 +117,7 @@ export default class TablePipelines extends Component {
         paginator={true}
         //paginatorLeft={paginatorLeft}
         //paginatorRight={paginatorRight}
-        rows={this.state.rows}
+        rows={this.state.numberRows}
         rowsPerPageOptions={this.state.rowsPerPageOptions}
         totalRecords={this.state.totalRecords}
         loading={this.state.loading}
