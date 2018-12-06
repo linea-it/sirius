@@ -1,6 +1,6 @@
 [
     {
-        "field": "display_name", 
+        "field": "displayName", 
         "header": "Name"
     },
     {
@@ -12,15 +12,15 @@
         "header": "Version"
     },
     {
-        "field": "pipelines", 
-        "header": "Pipelines"
+        "field": "pipeline", 
+        "header": "Pipeline"
     },
     {
         "field": "owner", 
         "header": "Owner"
     },
     {
-        "field": "module_id", 
+        "field": "moduleId", 
         "header": "Module"
     }
 ]

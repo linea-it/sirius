@@ -1,15 +1,12 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+import Centaurus from '../../api';
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { MultiSelect } from 'primereact/multiselect';
-//import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 
 import columnsTableComponents from '../../assets/json/columnsTableComponents.json';
-
-const URL = 'http://devel2.linea.gov.br/~singulani/components.json';
 
 export default class TableComponents extends Component {
   constructor() {
@@ -21,10 +18,10 @@ export default class TableComponents extends Component {
       globalFilter: null,
       loading: false,
       first: 0,
-      rows: 20,
+      numberRows: 20,
       totalRecords: 0,
       rowsPerPageOptions: [5, 10, 20],
-      itens: URL,
+      rows: [],
     };
 
     this.colOptionsComponents = [];
@@ -45,18 +42,38 @@ export default class TableComponents extends Component {
       loading: true,
     });
 
-    axios
-      .get(URL)
-      .then(response =>
-        this.setState({
-          itens: response.data,
-          loading: false,
-        })
-      )
-      .catch(() => {
-        console.log('Erro ao recuperar os dados');
-      });
+    this.loadComponents();
   }
+
+  loadComponents = async () => {
+    const components = await Centaurus.getAllComponents();
+    if (
+      components &&
+      components.pipelinesModulesList &&
+      components.pipelinesModulesList.edges
+    ) {
+      const rows = components.pipelinesModulesList.edges.map(e => {
+        return {
+          pipeline: e.node.pipeline ? e.node.pipeline.displayName : null,
+          displayName: e.node.module ? e.node.module.displayName : null,
+          moduleId: e.node.module ? e.node.module.moduleId : null,
+          owner: e.node.module
+            ? e.node.module.user
+              ? e.node.module.user.displayName
+              : null
+            : null,
+          version: e.node.module ? e.node.module.version : null,
+          name: e.node.module ? e.node.module.name : null,
+        };
+      });
+      this.setState({
+        rows,
+        loading: false,
+      });
+    } else {
+      this.setState({ loading: false });
+    }
+  };
 
   render() {
     const header = (
@@ -92,7 +109,7 @@ export default class TableComponents extends Component {
     return (
       <DataTable
         header={header}
-        value={this.state.itens}
+        value={this.state.rows}
         resizableColumns={true}
         columnResizeMode="expand"
         reorderableColumns={true}
@@ -105,7 +122,7 @@ export default class TableComponents extends Component {
         paginator={true}
         //paginatorLeft={paginatorLeft}
         //paginatorRight={paginatorRight}
-        rows={this.state.rows}
+        rows={this.state.numberRows}
         rowsPerPageOptions={this.state.rowsPerPageOptions}
         totalRecords={this.state.totalRecords}
         loading={this.state.loading}

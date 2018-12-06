@@ -7,7 +7,7 @@ const Menu = () => {
       <li className="nav-item">
         <Link
           to="/UserInterfaces"
-          activeClassName="active"
+          activeclassname="active"
           className="nav-link"
         >
           User Interfaces

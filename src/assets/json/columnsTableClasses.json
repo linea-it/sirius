@@ -1,18 +1,18 @@
 [
     {
-        "field": "class_name", 
+        "field": "className", 
         "header": "Name"
     },
     {
-        "field": "display_class", 
+        "field": "displayName", 
         "header": "Class"
     },
     {
-        "field": "type_name", 
+        "field": "typeName", 
         "header": "Type Name"
     },
     {
-        "field": "display_type", 
+        "field": "typeDisplayName", 
         "header": "Type"
     }
 

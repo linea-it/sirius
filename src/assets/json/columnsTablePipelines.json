@@ -1,6 +1,6 @@
 [
     {
-        "field": "display_name", 
+        "field": "displayName", 
         "header": "Pipeline Name"
     },
     {
@@ -8,7 +8,7 @@
         "header": "Name"
     },
     {
-        "field": "version_date", 
+        "field": "versionDate", 
         "header": "Version Date"
     },
     {
