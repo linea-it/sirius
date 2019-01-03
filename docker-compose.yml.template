@@ -2,11 +2,5 @@ version: "3.6"
 services:
   user-interfaces:
     build: .
-    working_dir: /src/app
-    environment:
-      - PORT=7001
     ports:
-      - 7001:7001
-    command: sh entrypoint.sh
-    volumes:
-      - ./entrypoint.sh:/src/app/entrypoint.sh
+      - 80:8080
