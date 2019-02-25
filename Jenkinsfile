@@ -29,11 +29,11 @@ pipeline {
             }
             steps {
                 script {
-                dockerImage = docker.build registry + ":$GIT_COMMIT"
+                sh 'docker build -t $registry:$GIT_COMMIT .'
                 docker.withRegistry( '', registryCredential ) {
-                dockerImage.push()
+                    sh 'docker push $registry:$GIT_COMMIT'
+                    sh 'docker rmi $registry:$GIT_COMMIT'
                 }
-                sh "docker rmi $registry:$GIT_COMMIT"
                 sh """
                   curl -D - -X \"POST\" \
                     -H \"content-type: application/json\" \
@@ -52,11 +52,11 @@ pipeline {
             }
             steps {
                 script {
-                dockerImage = docker.build registry + ":$TAG_NAME "
+                sh 'docker build -t $registry:$TAG_NAME .'
                 docker.withRegistry( '', registryCredential ) {
-                dockerImage.push()
+                    sh 'docker push $registry:$TAG_NAME'
+                    sh 'docker rmi $registry:$TAG_NAME'
                 }
-                sh "docker rmi $registry:$TAG_NAME"
                 sh """
                   curl -D - -X \"POST\" \
                     -H \"content-type: application/json\" \
