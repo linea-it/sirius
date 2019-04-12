@@ -1,10 +1,17 @@
-# Sirius
+# Linea My Workspace
 
-This App is used to visualize User Interface data from LIneA's Science Portal
+## Running locally
 
-## Docker installation
+```
+cp .env.template .env
+yarn install
+yarn start
+```
 
-```bash
+
+## Running with Docker
+
+```
 cp .env.template .env
 cp docker-compose.yml.template docker-compose.yml
 docker-compose up
