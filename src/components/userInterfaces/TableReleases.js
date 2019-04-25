@@ -1,6 +1,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import Paper from '@material-ui/core/Paper';
+// import Icon from '@material-ui/core/Icon';
 import { withStyles } from '@material-ui/core/styles';
 import {
   PagingState,
@@ -28,9 +29,15 @@ const styles = {
     position: 'relative',
     paddingTop: '10px',
   },
+  itemLink: {
+    color: 'blue',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    lineHeight: '1.3',
+  },
 };
 
-class TableClasses extends React.PureComponent {
+class TablePipelines extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = this.initialState;
@@ -39,20 +46,22 @@ class TableClasses extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'displayName', title: 'Name' },
-        { name: 'name', title: 'Class' },
-        { name: 'version', title: 'Version' },
-        { name: 'pipeline', title: 'Pipeline' },
+        { name: 'displayName', title: 'Pipeline Name' },
+        { name: 'name', title: 'Name' },
+        { name: 'versionDate', title: 'Version Date' },
         { name: 'owner', title: 'Owner' },
-        { name: 'moduleId', title: 'Module' },
+        { name: 'group', title: 'Group' },
+        { name: 'stage', title: 'Stage' },
+        { name: 'readme', title: 'Readme' },
       ],
       defaultColumnWidths: [
         { columnName: 'displayName', width: 200 },
         { columnName: 'name', width: 200 },
-        { columnName: 'version', width: 200 },
-        { columnName: 'pipeline', width: 200 },
+        { columnName: 'versionDate', width: 200 },
         { columnName: 'owner', width: 200 },
-        { columnName: 'moduleId', width: 100 },
+        { columnName: 'group', width: 200 },
+        { columnName: 'stage', width: 200 },
+        { columnName: 'readme', width: 100 },
       ],
       data: [],
       totalCount: 0,
@@ -137,12 +146,11 @@ class TableClasses extends React.PureComponent {
     });
   };
 
-  decodeTotalCount = components => {
-    if (components !== null) {
-      const componentsLocal =
-        components.pipelinesModulesList.pageInfo.endCursor;
+  decodeTotalCount = pipelines => {
+    if (pipelines !== null) {
+      const pipelinesLocal = pipelines.pipelinesList.pageInfo.endCursor;
 
-      const decodeString = window.atob(componentsLocal);
+      const decodeString = window.atob(pipelinesLocal);
 
       const totalCount = decodeString.split(':')[1];
 
@@ -155,85 +163,32 @@ class TableClasses extends React.PureComponent {
     let { totalCount } = this.state;
 
     this.clearData();
-    const componentsTotal = await Centaurus.getAllComponentsTotalCount();
-    totalCount = this.decodeTotalCount(componentsTotal);
+    const pipelinesTotal = await Centaurus.getAllPipelinesTotalCount();
+    totalCount = this.decodeTotalCount(pipelinesTotal);
 
-    const components = await Centaurus.getAllComponents(pageSize, after);
-    if (
-      components &&
-      components.pipelinesModulesList &&
-      components.pipelinesModulesList.edges
-    ) {
-      const componentsLocal = components.pipelinesModulesList.edges.map(e => {
+    const pipelines = await Centaurus.getAllPipelines(pageSize, after);
+    if (pipelines && pipelines.pipelinesList && pipelines.pipelinesList.edges) {
+      const pipelinesLocal = pipelines.pipelinesList.edges.map(row => {
         return {
-          pipeline: e.node.pipeline ? e.node.pipeline.displayName : null,
-          name: e.node.module ? e.node.module.name : null,
-          version: e.node.module ? e.node.module.version : null,
-          moduleId: e.node.module ? e.node.module.moduleId : null,
-          owner: e.node.module
-            ? e.node.module.user
-              ? e.node.module.user.displayName
-              : null
+          displayName: row.node.displayName,
+          name: row.node.name,
+          versionDate: row.node.versionDate,
+          owner: row.node.user ? row.node.user.displayName : null,
+          group: row.node.group ? row.node.group.displayName : null,
+          stage: row.node.pipelineStage
+            ? row.node.pipelineStage.displayName
             : null,
-          displayName: e.node.module ? e.node.module.displayName : null,
+          readme: row.node.readme,
         };
       });
       this.setState({
-        data: componentsLocal,
+        data: pipelinesLocal,
         totalCount: parseInt(totalCount),
-        cursor: components.pipelinesModulesList.pageInfo,
+        cursor: pipelines.pipelinesList.pageInfo,
         loading: false,
       });
     } else {
-      return null;
-    }
-  };
-
-  renderName = rowData => {
-    if (rowData.pipeline) {
-      return <span title={rowData.pipeline}>{rowData.pipeline}</span>;
-    } else {
-      return '-';
-    }
-  };
-
-  renderClass = rowData => {
-    if (rowData.name) {
-      return <span title={rowData.name}>{rowData.name}</span>;
-    } else {
-      return '-';
-    }
-  };
-
-  renderVersion = rowData => {
-    if (rowData.version) {
-      return <span title={rowData.version}>{rowData.version}</span>;
-    } else {
-      return '-';
-    }
-  };
-
-  renderPipeline = rowData => {
-    if (rowData.moduleId) {
-      return <span title={rowData.moduleId}>{rowData.moduleId}</span>;
-    } else {
-      return '-';
-    }
-  };
-
-  renderOwner = rowData => {
-    if (rowData.owner) {
-      return <span title={rowData.owner}>{rowData.owner}</span>;
-    } else {
-      return '-';
-    }
-  };
-
-  renderModule = rowData => {
-    if (rowData.displayName) {
-      return <span title={rowData.displayName}>{rowData.displayName}</span>;
-    } else {
-      return '-';
+      this.clearData();
     }
   };
 
@@ -293,18 +248,8 @@ class TableClasses extends React.PureComponent {
   };
 
   render() {
-    const { loading, data } = this.state;
+    const { loading } = this.state;
     const { classes } = this.props;
-
-    data.map(row => {
-      row.pipeline = this.renderName(row);
-      row.name = this.renderClass(row);
-      row.version = this.renderVersion(row);
-      row.moduleId = this.renderPipeline(row);
-      row.owner = this.renderOwner(row);
-      row.displayName = this.renderModule(row);
-      return row;
-    });
 
     return (
       <Paper className={classes.wrapPaper}>
@@ -315,4 +260,4 @@ class TableClasses extends React.PureComponent {
   }
 }
 
-export default withStyles(styles)(TableClasses);
+export default withStyles(styles)(TablePipelines);

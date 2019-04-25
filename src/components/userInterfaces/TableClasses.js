@@ -4,19 +4,18 @@ import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core/styles';
 import {
   PagingState,
-  // SortingState,
   CustomPaging,
-  // SearchState,
   SelectionState,
 } from '@devexpress/dx-react-grid';
 import {
   Grid,
   Table,
   TableHeaderRow,
+  TableColumnVisibility,
   PagingPanel,
   TableColumnResizing,
+  ColumnChooser,
   Toolbar,
-  // SearchPanel,
   TableSelection,
 } from '@devexpress/dx-react-grid-material-ui';
 
@@ -40,26 +39,24 @@ class TableClasses extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'className', title: 'Name' },
-        { name: 'displayName', title: 'Class' },
         { name: 'typeName', title: 'Type Name' },
         { name: 'typeDisplayName', title: 'Type' },
+        { name: 'className', title: 'Name' },
+        { name: 'displayName', title: 'Class' },
       ],
       defaultColumnWidths: [
-        { columnName: 'className', width: 250 },
-        { columnName: 'displayName', width: 250 },
-        { columnName: 'typeName', width: 200 },
-        { columnName: 'typeDisplayName', width: 200 },
+        { columnName: 'typeName', width: 300 },
+        { columnName: 'typeDisplayName', width: 300 },
+        { columnName: 'className', width: 300 },
+        { columnName: 'displayName', width: 300 },
       ],
       data: [],
-      // sorting: [{ columnName: 'className', direction: 'desc' }],
       totalCount: 0,
       pageSize: 10,
       pageSizes: [5, 10, 15],
       currentPage: 0,
       loading: true,
       after: '',
-      // searchValue: '',
       selection: [],
     };
   }
@@ -71,16 +68,6 @@ class TableClasses extends React.PureComponent {
   componentDidMount() {
     this.loadData();
   }
-
-  // changeSorting = sorting => {
-  //   this.setState(
-  //     {
-  //       loading: true,
-  //       sorting,
-  //     },
-  //     () => this.loadData()
-  //   );
-  // };
 
   changeCurrentPage = currentPage => {
     var offset = currentPage * this.state.pageSize;
@@ -111,25 +98,6 @@ class TableClasses extends React.PureComponent {
     );
   };
 
-  // changeSearchValue = searchValue => {
-  //   const { columns } = this.state;
-
-  //   let searchValue = columns
-  //     .reduce((acc, { name }) => {
-  //       acc.push(`["${name}", "contains", "${this.state.searchValue}"]`);
-  //       return acc;
-  //     }, [])
-  //     .join(',"or",');
-
-  //   this.setState(
-  //     {
-  //       loading: true,
-  //       searchValue: searchValue,
-  //     },
-  //     () => this.loadData()
-  //   );
-  // };
-
   handleSelection = selected => {
     this.setState({ selected: selected });
   };
@@ -159,6 +127,12 @@ class TableClasses extends React.PureComponent {
     );
   };
 
+  clearData = () => {
+    this.setState({
+      data: [],
+    });
+  };
+
   decodeTotalCount = classes => {
     if (classes !== null) {
       const classesLocal = classes.productClassList.pageInfo.endCursor;
@@ -169,12 +143,6 @@ class TableClasses extends React.PureComponent {
 
       return totalCount;
     }
-  };
-
-  clearData = () => {
-    this.setState({
-      data: [],
-    });
   };
 
   loadData = async () => {
@@ -189,12 +157,12 @@ class TableClasses extends React.PureComponent {
     if (classes && classes.productClassList && classes.productClassList.edges) {
       const classesLocal = classes.productClassList.edges.map(e => {
         return {
-          displayName: e.node.displayName,
-          className: e.node.className,
           typeName: e.node.productType ? e.node.productType.typeName : null,
           typeDisplayName: e.node.productType
             ? e.node.productType.displayName
             : null,
+          className: e.node.className,
+          displayName: e.node.displayName,
         };
       });
       this.setState({
@@ -205,6 +173,40 @@ class TableClasses extends React.PureComponent {
       });
     } else {
       return null;
+    }
+  };
+
+  renderTypeName = rowData => {
+    if (rowData.typeName) {
+      return <span title={rowData.typeName}>{rowData.typeName}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderType = rowData => {
+    if (rowData.typeDisplayName) {
+      return (
+        <span title={rowData.typeDisplayName}>{rowData.typeDisplayName}</span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderClass = rowData => {
+    if (rowData.className) {
+      return <span title={rowData.className}>{rowData.className}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderName = rowData => {
+    if (rowData.displayName) {
+      return <span title={rowData.displayName}>{rowData.displayName}</span>;
+    } else {
+      return '-';
     }
   };
 
@@ -222,11 +224,6 @@ class TableClasses extends React.PureComponent {
 
     return (
       <Grid rows={data} columns={columns}>
-        {/* <SearchState onValueChange={this.changeSearchValue} /> */}
-        {/* <SortingState
-          sorting={sorting}
-          onSortingChange={this.changeSorting}
-        /> */}
         <PagingState
           currentPage={currentPage}
           onCurrentPageChange={this.changeCurrentPage}
@@ -241,6 +238,7 @@ class TableClasses extends React.PureComponent {
         <Table />
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
         <TableHeaderRow />
+        <TableColumnVisibility />
         <TableSelection
           selectByRowClick
           highlightRow
@@ -248,7 +246,7 @@ class TableClasses extends React.PureComponent {
         />
         <PagingPanel pageSizes={pageSizes} />
         <Toolbar />
-        {/* <SearchPanel /> */}
+        <ColumnChooser />
       </Grid>
     );
   };
@@ -268,8 +266,16 @@ class TableClasses extends React.PureComponent {
   };
 
   render() {
-    const { loading } = this.state;
+    const { loading, data } = this.state;
     const { classes } = this.props;
+
+    data.map(row => {
+      row.typeName = this.renderTypeName(row);
+      row.typeDisplayName = this.renderType(row);
+      row.className = this.renderClass(row);
+      row.displayName = this.renderName(row);
+      return row;
+    });
 
     return (
       <Paper className={classes.wrapPaper}>

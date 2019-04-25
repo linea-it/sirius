@@ -11,6 +11,42 @@ const client = new Lokka({
 });
 
 export default class Centaurus {
+  static async getAllPipelinesTotalCount() {
+    try {
+      const pipelines = await client.query(`
+        {
+          pipelinesList {
+            pageInfo {
+              startCursor
+              endCursor
+            }
+          }
+        }
+      `);
+      return pipelines;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static async getAllComponentsTotalCount() {
+    try {
+      const components = await client.query(`
+        {
+          pipelinesModulesList {
+            pageInfo {
+              startCursor
+              endCursor
+            }
+          }
+        }
+      `);
+      return components;
+    } catch (e) {
+      return null;
+    }
+  }
+
   static async getAllClassesTotalCount() {
     try {
       const classes = await client.query(`
@@ -29,52 +65,55 @@ export default class Centaurus {
     }
   }
 
-  static async getAllClasses(pageSize, after) {
+  static async getAllPipelines(pageSize, after) {
     var strAfter = '';
-    // var search = [];
 
     if (after !== null) {
       strAfter = `, after: "${after}"`;
     }
 
-    // if (searchValue.length > 1) {
-    //   search = `, search: "${searchValue}"`;
-    // }
-
     try {
-      const classes = await client.query(`
-        {
-          productClassList (first: ${pageSize} ${strAfter}) {
-            pageInfo {
-              startCursor
-              endCursor
-            }
-            edges {
-              node {
-                className
+      const pipelines = await client.query(`
+      {
+        pipelinesList(first: ${pageSize} ${strAfter}) {
+          edges {
+            node {
+              name
+              displayName
+              versionDate
+              user {
                 displayName
-                productType {
-                  displayName
-                  typeName
-                }
               }
+              group {
+                displayName
+              }
+              pipelineStage {
+                displayName
+              }
+              readme
             }
           }
         }
-      `);
+      }
+    `);
 
-      return classes;
+      return pipelines;
     } catch (e) {
-      console.log(e);
       return null;
     }
   }
 
-  static async getAllComponents() {
+  static async getAllComponents(pageSize, after) {
+    var strAfter = '';
+
+    if (after !== null) {
+      strAfter = `, after: "${after}"`;
+    }
+
     try {
       const components = await client.query(`
         {
-          pipelinesModulesList {
+          pipelinesModulesList(first: ${pageSize} ${strAfter}) {
             edges {
               node {
                 pipeline {
@@ -101,34 +140,38 @@ export default class Centaurus {
     }
   }
 
-  static async getAllPipelines() {
+  static async getAllClasses(pageSize, after) {
+    var strAfter = '';
+
+    if (after !== null) {
+      strAfter = `, after: "${after}"`;
+    }
+
     try {
-      const pipelines = await client.query(`
-      {
-        pipelinesList {
-          edges {
-            node {
-              name
-              displayName
-              versionDate
-              user {
+      const classes = await client.query(`
+        {
+          productClassList(first: ${pageSize} ${strAfter}) {
+            pageInfo {
+              startCursor
+              endCursor
+            }
+            edges {
+              node {
+                className
                 displayName
+                productType {
+                  displayName
+                  typeName
+                }
               }
-              group {
-                displayName
-              }
-              pipelineStage {
-                displayName
-              }
-              readme
             }
           }
         }
-      }
-    `);
+      `);
 
-      return pipelines;
+      return classes;
     } catch (e) {
+      console.log(e);
       return null;
     }
   }
