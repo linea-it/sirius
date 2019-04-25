@@ -14,6 +14,7 @@ pipeline {
             steps {
                 sh 'yarn install'
                 sh 'yarn lint'
+                sh 'yarn test'
             }
         }
         stage('Building and push image') {
@@ -57,6 +58,7 @@ pipeline {
                     sh 'docker push $registry:$TAG_NAME'
                     sh 'docker rmi $registry:$TAG_NAME'
                 }
+
                 sh """
                   curl -D - -X \"POST\" \
                     -H \"content-type: application/json\" \

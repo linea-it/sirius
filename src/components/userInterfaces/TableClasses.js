@@ -1,128 +1,289 @@
-import React, { Component } from 'react';
+import * as React from 'react';
+import PropTypes from 'prop-types';
+import Paper from '@material-ui/core/Paper';
+import { withStyles } from '@material-ui/core/styles';
+import {
+  PagingState,
+  CustomPaging,
+  SelectionState,
+} from '@devexpress/dx-react-grid';
+import {
+  Grid,
+  Table,
+  TableHeaderRow,
+  TableColumnVisibility,
+  PagingPanel,
+  TableColumnResizing,
+  ColumnChooser,
+  Toolbar,
+  TableSelection,
+} from '@devexpress/dx-react-grid-material-ui';
+
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 import Centaurus from '../../api';
 
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { MultiSelect } from 'primereact/multiselect';
-import { InputText } from 'primereact/inputtext';
+const styles = {
+  wrapPaper: {
+    position: 'relative',
+    paddingTop: '10px',
+  },
+};
 
-import columnsTableClasses from '../../assets/json/columnsTableClasses.json';
+class TableClasses extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = this.initialState;
+  }
 
-export default class TableClasses extends Component {
-  constructor() {
-    super();
-    const columnsClasses = columnsTableClasses;
-
-    this.state = {
-      colsClasses: columnsClasses,
-      globalFilter: null,
-      loading: false,
-      first: 0,
-      numberRows: 20,
-      totalRecords: 0,
-      rowsPerPageOptions: [5, 10, 20],
-      rows: [],
+  get initialState() {
+    return {
+      columns: [
+        { name: 'typeName', title: 'Type Name' },
+        { name: 'typeDisplayName', title: 'Type' },
+        { name: 'className', title: 'Name' },
+        { name: 'displayName', title: 'Class' },
+      ],
+      defaultColumnWidths: [
+        { columnName: 'typeName', width: 300 },
+        { columnName: 'typeDisplayName', width: 300 },
+        { columnName: 'className', width: 300 },
+        { columnName: 'displayName', width: 300 },
+      ],
+      data: [],
+      totalCount: 0,
+      pageSize: 10,
+      pageSizes: [5, 10, 15],
+      currentPage: 0,
+      loading: true,
+      after: '',
+      selection: [],
     };
-
-    this.colOptionsClasses = [];
-
-    for (const col of columnsClasses) {
-      this.colOptionsClasses.push({ label: col.header, value: col });
-    }
-
-    this.onColumnToggleClasses = this.onColumnToggleClasses.bind(this);
   }
 
-  onColumnToggleClasses(event) {
-    this.setState({ colsClasses: event.value });
-  }
+  static propTypes = {
+    classes: PropTypes.object.isRequired,
+  };
 
   componentDidMount() {
-    this.setState({
-      loading: true,
-    });
-
-    this.loadClasses();
+    this.loadData();
   }
 
-  loadClasses = async () => {
-    const classes = await Centaurus.getAllClasses();
+  changeCurrentPage = currentPage => {
+    var offset = currentPage * this.state.pageSize;
+
+    const after = window.btoa('arrayconnection:' + (offset - 1));
+    this.setState(
+      {
+        loading: true,
+        currentPage,
+        after: after,
+      },
+      () => this.loadData()
+    );
+  };
+
+  changePageSize = pageSize => {
+    const { totalCount, currentPage: stateCurrentPage } = this.state;
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const currentPage = Math.min(stateCurrentPage, totalPages - 1);
+
+    this.setState(
+      {
+        loading: true,
+        pageSize,
+        currentPage,
+      },
+      () => this.loadData()
+    );
+  };
+
+  handleSelection = selected => {
+    this.setState({ selected: selected });
+  };
+
+  changeSelection = selection => {
+    // Neste caso a selecao e para uma linha apenas,
+    var selected_id, selectedRow;
+    if (selection.length > 0) {
+      // comparar a selecao atual com a anterior para descobrir qual
+      // linha foi selecionado por ultimo
+      const diff = selection.filter(x => !this.state.selection.includes(x));
+
+      selection = diff;
+      selected_id = diff[0];
+      selectedRow = this.state.data[selected_id];
+    } else {
+      selection = [];
+      selectedRow = null;
+    }
+
+    this.setState(
+      {
+        selection,
+        selectedRow,
+      },
+      this.handleSelection(selectedRow)
+    );
+  };
+
+  clearData = () => {
+    this.setState({
+      data: [],
+    });
+  };
+
+  decodeTotalCount = classes => {
+    if (classes !== null) {
+      const classesLocal = classes.productClassList.pageInfo.endCursor;
+
+      const decodeString = window.atob(classesLocal);
+
+      const totalCount = decodeString.split(':')[1];
+
+      return totalCount;
+    }
+  };
+
+  loadData = async () => {
+    const { pageSize, after } = this.state;
+    let { totalCount } = this.state;
+
+    this.clearData();
+    const classesTotal = await Centaurus.getAllClassesTotalCount();
+    totalCount = this.decodeTotalCount(classesTotal);
+
+    const classes = await Centaurus.getAllClasses(pageSize, after);
     if (classes && classes.productClassList && classes.productClassList.edges) {
-      const rows = classes.productClassList.edges.map(e => {
+      const classesLocal = classes.productClassList.edges.map(e => {
         return {
-          displayName: e.node.displayName,
-          className: e.node.className,
           typeName: e.node.productType ? e.node.productType.typeName : null,
           typeDisplayName: e.node.productType
             ? e.node.productType.displayName
             : null,
+          className: e.node.className,
+          displayName: e.node.displayName,
         };
       });
       this.setState({
-        rows,
+        data: classesLocal,
+        totalCount: parseInt(totalCount),
+        cursor: classes.productClassList.pageInfo,
         loading: false,
       });
     } else {
-      this.setState({ loading: false });
+      return null;
     }
   };
 
-  render() {
-    const header = (
-      <div style={{ textAlign: 'left' }}>
-        <MultiSelect
-          value={this.state.colsClasses}
-          options={this.colOptionsClasses}
-          onChange={this.onColumnToggleClasses}
-        />
-        <br />
-        <InputText
-          type="search"
-          onInput={e => this.setState({ globalFilter: e.target.value })}
-          placeholder="Global Search"
-        />
-      </div>
-    );
+  renderTypeName = rowData => {
+    if (rowData.typeName) {
+      return <span title={rowData.typeName}>{rowData.typeName}</span>;
+    } else {
+      return '-';
+    }
+  };
 
-    const columnsClasses = this.state.colsClasses.map(col => {
+  renderType = rowData => {
+    if (rowData.typeDisplayName) {
       return (
-        <Column
-          key={col.field}
-          field={col.field}
-          header={col.header}
-          sortable={true}
-        />
+        <span title={rowData.typeDisplayName}>{rowData.typeDisplayName}</span>
       );
-    });
+    } else {
+      return '-';
+    }
+  };
 
-    //let paginatorLeft = <Button icon="fa fa-refresh"/>;
-    //let paginatorRight = <Button icon="fa fa-cloud-upload"/>;
+  renderClass = rowData => {
+    if (rowData.className) {
+      return <span title={rowData.className}>{rowData.className}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderName = rowData => {
+    if (rowData.displayName) {
+      return <span title={rowData.displayName}>{rowData.displayName}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderTable = () => {
+    const {
+      data,
+      columns,
+      pageSize,
+      pageSizes,
+      currentPage,
+      totalCount,
+      defaultColumnWidths,
+      selection,
+    } = this.state;
 
     return (
-      <DataTable
-        header={header}
-        value={this.state.rows}
-        resizableColumns={true}
-        columnResizeMode="expand"
-        reorderableColumns={true}
-        reorderableRows={true}
-        responsive={true}
-        selectionMode="single"
-        selection={this.state.selectedCar1}
-        onSelectionChange={e => this.setState({ selectedCar1: e.data })}
-        scrollable={true}
-        paginator={true}
-        //paginatorLeft={paginatorLeft}
-        //paginatorRight={paginatorRight}
-        rows={this.state.numberRows}
-        rowsPerPageOptions={this.state.rowsPerPageOptions}
-        totalRecords={this.state.totalRecords}
-        loading={this.state.loading}
-        globalFilter={this.state.globalFilter}
-        paginatorTemplate="RowsPerPageDropdown PageLinks FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-      >
-        {columnsClasses}
-      </DataTable>
+      <Grid rows={data} columns={columns}>
+        <PagingState
+          currentPage={currentPage}
+          onCurrentPageChange={this.changeCurrentPage}
+          pageSize={pageSize}
+          onPageSizeChange={this.changePageSize}
+        />
+        <CustomPaging totalCount={totalCount} />
+        <SelectionState
+          selection={selection}
+          onSelectionChange={this.changeSelection}
+        />
+        <Table />
+        <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
+        <TableHeaderRow />
+        <TableColumnVisibility />
+        <TableSelection
+          selectByRowClick
+          highlightRow
+          showSelectionColumn={false}
+        />
+        <PagingPanel pageSizes={pageSizes} />
+        <Toolbar />
+        <ColumnChooser />
+      </Grid>
+    );
+  };
+
+  renderLoading = () => {
+    return (
+      <CircularProgress
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          margin: '-30px 0 0 -20px',
+          zIndex: '99',
+        }}
+      />
+    );
+  };
+
+  render() {
+    const { loading, data } = this.state;
+    const { classes } = this.props;
+
+    data.map(row => {
+      row.typeName = this.renderTypeName(row);
+      row.typeDisplayName = this.renderType(row);
+      row.className = this.renderClass(row);
+      row.displayName = this.renderName(row);
+      return row;
+    });
+
+    return (
+      <Paper className={classes.wrapPaper}>
+        {this.renderTable()}
+        {loading && this.renderLoading()}
+      </Paper>
     );
   }
 }
+
+export default withStyles(styles)(TableClasses);
