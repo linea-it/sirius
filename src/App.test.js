@@ -14,9 +14,10 @@ describe('App', () => {
   });
 
   it('Mounts', () => {
+    // eslint-disable-next-line no-undef
     expect(
       wrapper
-        .find('Button')
+        .find('section')
         .at(0)
         .text()
     ).toBe('1');
