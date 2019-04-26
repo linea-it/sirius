@@ -1,7 +1,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import Paper from '@material-ui/core/Paper';
-// import Icon from '@material-ui/core/Icon';
+import Icon from '@material-ui/core/Icon';
 import { withStyles } from '@material-ui/core/styles';
 import {
   PagingState,
@@ -30,9 +30,7 @@ const styles = {
     paddingTop: '10px',
   },
   itemLink: {
-    color: 'blue',
     cursor: 'pointer',
-    textDecoration: 'underline',
     lineHeight: '1.3',
   },
 };
@@ -46,22 +44,20 @@ class TablePipelines extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'displayName', title: 'Pipeline Name' },
+        { name: 'releaseDisplayName', title: 'Release Display Name' },
         { name: 'name', title: 'Name' },
-        { name: 'versionDate', title: 'Version Date' },
-        { name: 'owner', title: 'Owner' },
-        { name: 'group', title: 'Group' },
-        { name: 'stage', title: 'Stage' },
-        { name: 'readme', title: 'Readme' },
+        { name: 'version', title: 'Version' },
+        { name: 'releaseDate', title: 'Release Date' },
+        { name: 'description', title: 'Description' },
+        { name: 'btnDocUrl', title: 'Doc Url' },
       ],
       defaultColumnWidths: [
-        { columnName: 'displayName', width: 200 },
-        { columnName: 'name', width: 200 },
-        { columnName: 'versionDate', width: 200 },
-        { columnName: 'owner', width: 200 },
-        { columnName: 'group', width: 200 },
-        { columnName: 'stage', width: 200 },
-        { columnName: 'readme', width: 100 },
+        { columnName: 'releaseDisplayName', width: 200 },
+        { columnName: 'name', width: 150 },
+        { columnName: 'version', width: 80 },
+        { columnName: 'releaseDate', width: 100 },
+        { columnName: 'description', width: 200 },
+        { columnName: 'btnDocUrl', width: 80 },
       ],
       data: [],
       totalCount: 0,
@@ -146,11 +142,11 @@ class TablePipelines extends React.PureComponent {
     });
   };
 
-  decodeTotalCount = pipelines => {
-    if (pipelines !== null) {
-      const pipelinesLocal = pipelines.pipelinesList.pageInfo.endCursor;
+  decodeTotalCount = releases => {
+    if (releases !== null) {
+      const releasesLocal = releases.releaseTagList.pageInfo.endCursor;
 
-      const decodeString = window.atob(pipelinesLocal);
+      const decodeString = window.atob(releasesLocal);
 
       const totalCount = decodeString.split(':')[1];
 
@@ -163,32 +159,94 @@ class TablePipelines extends React.PureComponent {
     let { totalCount } = this.state;
 
     this.clearData();
-    const pipelinesTotal = await Centaurus.getAllPipelinesTotalCount();
-    totalCount = this.decodeTotalCount(pipelinesTotal);
+    const releasesTotal = await Centaurus.getAllReleasesTotalCount();
+    totalCount = this.decodeTotalCount(releasesTotal);
 
-    const pipelines = await Centaurus.getAllPipelines(pageSize, after);
-    if (pipelines && pipelines.pipelinesList && pipelines.pipelinesList.edges) {
-      const pipelinesLocal = pipelines.pipelinesList.edges.map(row => {
+    const releases = await Centaurus.getAllReleases(pageSize, after);
+    if (releases && releases.releaseTagList && releases.releaseTagList.edges) {
+      const releasesLocal = releases.releaseTagList.edges.map(row => {
         return {
-          displayName: row.node.displayName,
+          releaseDisplayName: row.node.releaseDisplayName,
           name: row.node.name,
-          versionDate: row.node.versionDate,
-          owner: row.node.user ? row.node.user.displayName : null,
-          group: row.node.group ? row.node.group.displayName : null,
-          stage: row.node.pipelineStage
-            ? row.node.pipelineStage.displayName
-            : null,
-          readme: row.node.readme,
+          version: row.node.version,
+          releaseDate: row.node.releaseDate,
+          description: row.node.description,
+          docUrl: row.node.docUrl,
         };
       });
       this.setState({
-        data: pipelinesLocal,
+        data: releasesLocal,
         totalCount: parseInt(totalCount),
-        cursor: pipelines.pipelinesList.pageInfo,
+        cursor: releases.releaseTagList.pageInfo,
         loading: false,
       });
     } else {
       this.clearData();
+    }
+  };
+
+  renderRelease = rowData => {
+    if (rowData.releaseDisplayName) {
+      return (
+        <span title={rowData.releaseDisplayName}>
+          {rowData.releaseDisplayName}
+        </span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderName = rowData => {
+    if (rowData.name) {
+      return <span title={rowData.name}>{rowData.name}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderVersion = rowData => {
+    if (rowData.version) {
+      return <span title={rowData.version}>{rowData.version}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderReleaseDate = rowData => {
+    if (rowData.releaseDate) {
+      return <span title={rowData.releaseDate}>{rowData.releaseDate}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderDescription = rowData => {
+    if (rowData.description) {
+      return <span title={rowData.description}>{rowData.description}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  handleClickDocUrl = URL => {
+    window.open(URL);
+  };
+
+  renderDocUrl = rowData => {
+    const { classes } = this.props;
+    if (rowData.docUrl !== null) {
+      return (
+        <span
+          className={classes.itemLink}
+          title={rowData.docUrl}
+          onClick={() => this.handleClickDocUrl(rowData.docUrl)}
+        >
+          <Icon>link</Icon>
+        </span>
+      );
+    } else {
+      return '-';
     }
   };
 
@@ -248,8 +306,18 @@ class TablePipelines extends React.PureComponent {
   };
 
   render() {
-    const { loading } = this.state;
+    const { loading, data } = this.state;
     const { classes } = this.props;
+
+    data.map(row => {
+      row.releaseDisplayName = this.renderRelease(row);
+      row.name = this.renderName(row);
+      row.version = this.renderVersion(row);
+      row.releaseDate = this.renderReleaseDate(row);
+      row.description = this.renderDescription(row);
+      row.btnDocUrl = this.renderDocUrl(row);
+      return row;
+    });
 
     return (
       <Paper className={classes.wrapPaper}>

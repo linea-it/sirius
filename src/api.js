@@ -65,6 +65,24 @@ export default class Centaurus {
     }
   }
 
+  static async getAllReleasesTotalCount() {
+    try {
+      const releases = await client.query(`
+        {
+          releaseTagList {
+            pageInfo {
+              startCursor
+              endCursor
+            }
+          }
+        }
+      `);
+      return releases;
+    } catch (e) {
+      return null;
+    }
+  }
+
   static async getAllPipelines(pageSize, after) {
     var strAfter = '';
 
@@ -99,6 +117,8 @@ export default class Centaurus {
 
       return pipelines;
     } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
       return null;
     }
   }
@@ -136,6 +156,8 @@ export default class Centaurus {
 
       return components;
     } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
       return null;
     }
   }
@@ -151,10 +173,6 @@ export default class Centaurus {
       const classes = await client.query(`
         {
           productClassList(first: ${pageSize} ${strAfter}) {
-            pageInfo {
-              startCursor
-              endCursor
-            }
             edges {
               node {
                 className
@@ -170,6 +188,39 @@ export default class Centaurus {
       `);
 
       return classes;
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      return null;
+    }
+  }
+
+  static async getAllReleases(pageSize, after) {
+    var strAfter = '';
+
+    if (after !== null) {
+      strAfter = `, after: "${after}"`;
+    }
+
+    try {
+      const releases = await client.query(`
+        {
+          releaseTagList(first: ${pageSize} ${strAfter}) {
+            edges {
+              node {
+                releaseDisplayName
+                name
+                version
+                releaseDate
+                description
+                docUrl                
+              }
+            }
+          }
+        }
+      `);
+
+      return releases;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);

@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import TablePipelines from './userInterfaces/TablePipelines';
 import TableComponents from './userInterfaces/TableComponents';
 import TableClasses from './userInterfaces/TableClasses';
-// import TableReleases from './userInterfaces/TableReleases';
+import TableReleases from './userInterfaces/TableReleases';
 // import TablePackages from './userInterfaces/TablePackages';
 
 function TabContainer(props) {
@@ -73,7 +73,7 @@ class SimpleTabs extends React.Component {
           <Tab label="Pipelines" />
           <Tab label="Components" />
           <Tab label="Classes" />
-          <Tab label="Releases" disabled />
+          <Tab label="Releases" />
           <Tab label="Packages" disabled />
         </Tabs>
         {value === 0 && (
@@ -93,7 +93,7 @@ class SimpleTabs extends React.Component {
         )}
         {value === 3 && (
           <TabContainer className={classes.tab}>
-            {/* <TableReleases /> */}
+            <TableReleases />
           </TabContainer>
         )}
         {value === 4 && (
