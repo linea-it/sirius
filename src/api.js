@@ -195,7 +195,8 @@ export default class Centaurus {
     }
   }
 
-  static async getAllReleases(pageSize, after) {
+  static async getAllReleases(sorting, pageSize, after, searchValue) {
+    const sort = `${sorting[0].columnName}_${sorting[0].direction}`;
     var strAfter = '';
 
     if (after !== null) {
@@ -205,7 +206,7 @@ export default class Centaurus {
     try {
       const releases = await client.query(`
         {
-          releaseTagList(first: ${pageSize} ${strAfter}) {
+          releaseTagList(sort: [${sort}], search: "${searchValue}", first: ${pageSize} ${strAfter}) {
             edges {
               node {
                 releaseDisplayName
@@ -213,7 +214,8 @@ export default class Centaurus {
                 version
                 releaseDate
                 description
-                docUrl                
+                docUrl
+                tagId                
               }
             }
           }

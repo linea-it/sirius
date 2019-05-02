@@ -7,6 +7,8 @@ import {
   PagingState,
   CustomPaging,
   SelectionState,
+  SortingState,
+  SearchState,
 } from '@devexpress/dx-react-grid';
 import {
   Grid,
@@ -18,6 +20,7 @@ import {
   ColumnChooser,
   Toolbar,
   TableSelection,
+  SearchPanel,
 } from '@devexpress/dx-react-grid-material-ui';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -44,22 +47,23 @@ class TablePipelines extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'releaseDisplayName', title: 'Release Display Name' },
+        { name: 'release_display_name', title: 'Release Display Name' },
         { name: 'name', title: 'Name' },
         { name: 'version', title: 'Version' },
-        { name: 'releaseDate', title: 'Release Date' },
+        { name: 'release_date', title: 'Release Date' },
         { name: 'description', title: 'Description' },
         { name: 'btnDocUrl', title: 'Doc Url' },
       ],
       defaultColumnWidths: [
-        { columnName: 'releaseDisplayName', width: 200 },
+        { columnName: 'release_display_name', width: 200 },
         { columnName: 'name', width: 150 },
-        { columnName: 'version', width: 80 },
-        { columnName: 'releaseDate', width: 100 },
+        { columnName: 'version', width: 100 },
+        { columnName: 'release_date', width: 150 },
         { columnName: 'description', width: 200 },
-        { columnName: 'btnDocUrl', width: 80 },
+        { columnName: 'btnDocUrl', width: 100 },
       ],
       data: [],
+      sorting: [{ columnName: 'release_display_name', direction: 'desc' }],
       totalCount: 0,
       pageSize: 10,
       pageSizes: [5, 10, 15],
@@ -67,6 +71,7 @@ class TablePipelines extends React.PureComponent {
       loading: true,
       after: '',
       selection: [],
+      searchValue: '',
     };
   }
 
@@ -77,6 +82,16 @@ class TablePipelines extends React.PureComponent {
   componentDidMount() {
     this.loadData();
   }
+
+  changeSorting = sorting => {
+    this.setState(
+      {
+        loading: true,
+        sorting,
+      },
+      () => this.loadData()
+    );
+  };
 
   changeCurrentPage = currentPage => {
     var offset = currentPage * this.state.pageSize;
@@ -102,6 +117,16 @@ class TablePipelines extends React.PureComponent {
         loading: true,
         pageSize,
         currentPage,
+      },
+      () => this.loadData()
+    );
+  };
+
+  changeSearchValue = searchValue => {
+    this.setState(
+      {
+        loading: true,
+        searchValue,
       },
       () => this.loadData()
     );
@@ -155,21 +180,26 @@ class TablePipelines extends React.PureComponent {
   };
 
   loadData = async () => {
-    const { pageSize, after } = this.state;
+    const { sorting, pageSize, after, searchValue } = this.state;
     let { totalCount } = this.state;
 
     this.clearData();
     const releasesTotal = await Centaurus.getAllReleasesTotalCount();
     totalCount = this.decodeTotalCount(releasesTotal);
 
-    const releases = await Centaurus.getAllReleases(pageSize, after);
+    const releases = await Centaurus.getAllReleases(
+      sorting,
+      pageSize,
+      after,
+      searchValue
+    );
     if (releases && releases.releaseTagList && releases.releaseTagList.edges) {
       const releasesLocal = releases.releaseTagList.edges.map(row => {
         return {
-          releaseDisplayName: row.node.releaseDisplayName,
+          release_display_name: row.node.releaseDisplayName,
           name: row.node.name,
           version: row.node.version,
-          releaseDate: row.node.releaseDate,
+          release_date: row.node.releaseDate,
           description: row.node.description,
           docUrl: row.node.docUrl,
         };
@@ -254,6 +284,7 @@ class TablePipelines extends React.PureComponent {
     const {
       data,
       columns,
+      sorting,
       pageSize,
       pageSizes,
       currentPage,
@@ -264,6 +295,14 @@ class TablePipelines extends React.PureComponent {
 
     return (
       <Grid rows={data} columns={columns}>
+        <SearchState onValueChange={this.changeSearchValue} />
+        <SortingState
+          sorting={sorting}
+          onSortingChange={this.changeSorting}
+          columnExtensions={[
+            { columnName: 'btnDocUrl', sortingEnabled: false },
+          ]}
+        />
         <PagingState
           currentPage={currentPage}
           onCurrentPageChange={this.changeCurrentPage}
@@ -277,7 +316,7 @@ class TablePipelines extends React.PureComponent {
         />
         <Table />
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
-        <TableHeaderRow />
+        <TableHeaderRow showSortingControls />
         <TableColumnVisibility />
         <TableSelection
           selectByRowClick
@@ -286,6 +325,7 @@ class TablePipelines extends React.PureComponent {
         />
         <PagingPanel pageSizes={pageSizes} />
         <Toolbar />
+        <SearchPanel />
         <ColumnChooser />
       </Grid>
     );
