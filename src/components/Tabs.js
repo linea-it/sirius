@@ -72,9 +72,11 @@ class SimpleTabs extends React.Component {
         >
           <Tab label="Pipelines" />
           <Tab label="Components" />
-          <Tab label="Classes" />
-          <Tab label="Releases" />
           <Tab label="Packages" disabled />
+          <Tab label="Classes" />
+          <Tab label="Datasets" />
+          <Tab label="External Dataset" disabled />
+          <Tab label="Simulations" disabled />
         </Tabs>
         {value === 0 && (
           <TabContainer className={classes.tab}>
@@ -88,17 +90,27 @@ class SimpleTabs extends React.Component {
         )}
         {value === 2 && (
           <TabContainer className={classes.tab}>
-            <TableClasses />
+            {/* <TablePackages /> */}
           </TabContainer>
         )}
         {value === 3 && (
           <TabContainer className={classes.tab}>
-            <TableReleases />
+            <TableClasses />
           </TabContainer>
         )}
         {value === 4 && (
           <TabContainer className={classes.tab}>
-            {/* <TablePackages /> */}
+            <TableReleases />
+          </TabContainer>
+        )}
+        {value === 5 && (
+          <TabContainer className={classes.tab}>
+            {/* <TableRelease /> */}
+          </TabContainer>
+        )}
+        {value === 6 && (
+          <TabContainer className={classes.tab}>
+            {/* <TableSimulations /> */}
           </TabContainer>
         )}
       </div>

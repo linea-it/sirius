@@ -30,6 +30,16 @@ const styles = {
   },
 };
 
+const tableHeaderRowCell = ({ ...restProps }) => (
+  <TableHeaderRow.Cell
+    {...restProps}
+    style={{
+      color: '#555555',
+      fontSize: '1em',
+    }}
+  />
+);
+
 class TableClasses extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -39,16 +49,16 @@ class TableClasses extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'typeName', title: 'Type Name' },
-        { name: 'typeDisplayName', title: 'Type' },
         { name: 'className', title: 'Name' },
         { name: 'displayName', title: 'Class' },
+        { name: 'typeDisplayName', title: 'Type' },
+        { name: 'typeName', title: 'Type Name' },
       ],
       defaultColumnWidths: [
-        { columnName: 'typeName', width: 300 },
-        { columnName: 'typeDisplayName', width: 300 },
         { columnName: 'className', width: 300 },
         { columnName: 'displayName', width: 300 },
+        { columnName: 'typeDisplayName', width: 300 },
+        { columnName: 'typeName', width: 300 },
       ],
       data: [],
       totalCount: 0,
@@ -237,7 +247,7 @@ class TableClasses extends React.PureComponent {
         />
         <Table />
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
-        <TableHeaderRow />
+        <TableHeaderRow cellComponent={tableHeaderRowCell} />
         <TableColumnVisibility />
         <TableSelection
           selectByRowClick

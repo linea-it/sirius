@@ -1,7 +1,6 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import Paper from '@material-ui/core/Paper';
-import Icon from '@material-ui/core/Icon';
 import { withStyles } from '@material-ui/core/styles';
 import {
   PagingState,
@@ -36,7 +35,38 @@ const styles = {
     cursor: 'pointer',
     lineHeight: '1.3',
   },
+  btn: {
+    textTransform: 'none',
+    padding: '1px 5px',
+    width: '6em',
+    minHeight: '1em',
+    display: 'block',
+    textAlign: 'center',
+    lineHeight: '2',
+    boxShadow:
+      '0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)',
+    borderRadius: '4px',
+    boxSizing: 'border-box',
+  },
+  btnSuccess: {
+    backgroundColor: 'green',
+    color: '#fff',
+  },
+  btnDeprecated: {
+    backgroundColor: '#ffba01',
+    color: '#000',
+  },
 };
+
+const tableHeaderRowCell = ({ ...restProps }) => (
+  <TableHeaderRow.Cell
+    {...restProps}
+    style={{
+      color: '#555555',
+      fontSize: '1em',
+    }}
+  />
+);
 
 class TablePipelines extends React.PureComponent {
   constructor(props) {
@@ -47,23 +77,31 @@ class TablePipelines extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'release_display_name', title: 'Release Display Name' },
+        { name: 'display_name', title: 'Display Name' },
+        { name: 'field_name', title: 'Field Name' },
+        { name: 'install_date', title: 'Install Date' },
+        { name: 'release_date', title: 'Release Date' },
+        { name: 'start_date', title: 'Start Date' },
+        { name: 'discovery_date', title: 'Discovery Date' },
+        { name: 'release_name', title: 'Release Name' },
         { name: 'name', title: 'Name' },
         { name: 'version', title: 'Version' },
-        { name: 'release_date', title: 'Release Date' },
-        { name: 'description', title: 'Description' },
-        { name: 'btnDocUrl', title: 'Doc Url' },
+        { name: 'status', title: 'Status' },
       ],
       defaultColumnWidths: [
-        { columnName: 'release_display_name', width: 200 },
-        { columnName: 'name', width: 150 },
+        { columnName: 'display_name', width: 150 },
+        { columnName: 'field_name', width: 200 },
+        { columnName: 'install_date', width: 130 },
+        { columnName: 'release_date', width: 130 },
+        { columnName: 'start_date', width: 130 },
+        { columnName: 'discovery_date', width: 100 },
+        { columnName: 'release_name', width: 100 },
+        { columnName: 'name', width: 100 },
         { columnName: 'version', width: 100 },
-        { columnName: 'release_date', width: 150 },
-        { columnName: 'description', width: 200 },
-        { columnName: 'btnDocUrl', width: 100 },
+        { columnName: 'status', width: 100 },
       ],
       data: [],
-      sorting: [{ columnName: 'release_display_name', direction: 'desc' }],
+      sorting: [{ columnName: 'display_name', direction: 'desc' }],
       totalCount: 0,
       pageSize: 10,
       pageSizes: [5, 10, 15],
@@ -167,11 +205,11 @@ class TablePipelines extends React.PureComponent {
     });
   };
 
-  decodeTotalCount = releases => {
-    if (releases !== null) {
-      const releasesLocal = releases.releaseTagList.pageInfo.endCursor;
+  decodeTotalCount = fields => {
+    if (fields !== null) {
+      const fieldsLocal = fields.fieldsList.pageInfo.endCursor;
 
-      const decodeString = window.atob(releasesLocal);
+      const decodeString = window.atob(fieldsLocal);
 
       const totalCount = decodeString.split(':')[1];
 
@@ -184,30 +222,34 @@ class TablePipelines extends React.PureComponent {
     let { totalCount } = this.state;
 
     this.clearData();
-    const releasesTotal = await Centaurus.getAllReleasesTotalCount();
-    totalCount = this.decodeTotalCount(releasesTotal);
+    const fieldsTotal = await Centaurus.getAllFieldsTotalCount();
+    totalCount = this.decodeTotalCount(fieldsTotal);
 
-    const releases = await Centaurus.getAllReleases(
+    const fields = await Centaurus.getAllFields(
       sorting,
       pageSize,
       after,
       searchValue
     );
-    if (releases && releases.releaseTagList && releases.releaseTagList.edges) {
-      const releasesLocal = releases.releaseTagList.edges.map(row => {
+    if (fields && fields.fieldsList && fields.fieldsList.edges) {
+      const fieldsLocal = fields.fieldsList.edges.map(row => {
         return {
-          release_display_name: row.node.releaseDisplayName,
-          name: row.node.name,
-          version: row.node.version,
+          display_name: row.node.displayName,
+          field_name: row.node.fieldName,
+          install_date: row.node.installDate,
           release_date: row.node.releaseDate,
-          description: row.node.description,
-          docUrl: row.node.docUrl,
+          start_date: row.node.startDate,
+          discovery_date: row.node.discoveryDate,
+          release_name: row.node.releaseTag.releaseDisplayName,
+          name: row.node.releaseTag.name,
+          version: row.node.releaseTag.version,
+          status: row.node.status,
         };
       });
       this.setState({
-        data: releasesLocal,
+        data: fieldsLocal,
         totalCount: parseInt(totalCount),
-        cursor: releases.releaseTagList.pageInfo,
+        cursor: fields.fieldsList.pageInfo,
         loading: false,
       });
     } else {
@@ -215,12 +257,50 @@ class TablePipelines extends React.PureComponent {
     }
   };
 
-  renderRelease = rowData => {
-    if (rowData.releaseDisplayName) {
+  renderFieldName = rowData => {
+    if (rowData.field_name) {
+      return <span title={rowData.field_name}>{rowData.field_name}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderDisplayName = rowData => {
+    if (rowData.display_name) {
+      return <span title={rowData.display_name}>{rowData.display_name}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderInstallDate = rowData => {
+    if (rowData.install_date) {
+      return <span title={rowData.install_date}>{rowData.install_date}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderReleaseDate = rowData => {
+    if (rowData.release_date) {
+      return <span title={rowData.release_date}>{rowData.release_date}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderStartDate = rowData => {
+    if (rowData.start_date) {
+      return <span title={rowData.start_date}>{rowData.start_date}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderDiscoveryDate = rowData => {
+    if (rowData.discovery_date) {
       return (
-        <span title={rowData.releaseDisplayName}>
-          {rowData.releaseDisplayName}
-        </span>
+        <span title={rowData.discovery_date}>{rowData.discovery_date}</span>
       );
     } else {
       return '-';
@@ -243,40 +323,28 @@ class TablePipelines extends React.PureComponent {
     }
   };
 
-  renderReleaseDate = rowData => {
-    if (rowData.releaseDate) {
-      return <span title={rowData.releaseDate}>{rowData.releaseDate}</span>;
+  renderReleaseDisplayName = rowData => {
+    if (rowData.release_name) {
+      return <span title={rowData.release_name}>{rowData.release_name}</span>;
     } else {
       return '-';
     }
   };
 
-  renderDescription = rowData => {
-    if (rowData.description) {
-      return <span title={rowData.description}>{rowData.description}</span>;
-    } else {
-      return '-';
-    }
-  };
-
-  handleClickDocUrl = URL => {
-    window.open(URL);
-  };
-
-  renderDocUrl = rowData => {
+  renderStatus = rowData => {
     const { classes } = this.props;
-    if (rowData.docUrl !== null) {
+    if (rowData.status) {
       return (
-        <span
-          className={classes.itemLink}
-          title={rowData.docUrl}
-          onClick={() => this.handleClickDocUrl(rowData.docUrl)}
-        >
-          <Icon>link</Icon>
+        <span className={classes.btn} style={styles.btnSuccess}>
+          Available
         </span>
       );
     } else {
-      return '-';
+      return (
+        <span className={classes.btn} style={styles.btnDeprecated}>
+          Deprecated
+        </span>
+      );
     }
   };
 
@@ -300,7 +368,9 @@ class TablePipelines extends React.PureComponent {
           sorting={sorting}
           onSortingChange={this.changeSorting}
           columnExtensions={[
-            { columnName: 'btnDocUrl', sortingEnabled: false },
+            { columnName: 'name', sortingEnabled: false },
+            { columnName: 'version', sortingEnabled: false },
+            { columnName: 'release_name', sortingEnabled: false },
           ]}
         />
         <PagingState
@@ -316,7 +386,10 @@ class TablePipelines extends React.PureComponent {
         />
         <Table />
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
-        <TableHeaderRow showSortingControls />
+        <TableHeaderRow
+          cellComponent={tableHeaderRowCell}
+          showSortingControls
+        />
         <TableColumnVisibility />
         <TableSelection
           selectByRowClick
@@ -350,12 +423,16 @@ class TablePipelines extends React.PureComponent {
     const { classes } = this.props;
 
     data.map(row => {
-      row.releaseDisplayName = this.renderRelease(row);
+      row.display_name = this.renderDisplayName(row);
+      row.field_name = this.renderFieldName(row);
+      row.install_date = this.renderInstallDate(row);
+      row.release_date = this.renderReleaseDate(row);
+      row.start_date = this.renderStartDate(row);
+      row.discovery_date = this.renderDiscoveryDate(row);
+      row.release_name = this.renderReleaseDisplayName(row);
       row.name = this.renderName(row);
       row.version = this.renderVersion(row);
-      row.releaseDate = this.renderReleaseDate(row);
-      row.description = this.renderDescription(row);
-      row.btnDocUrl = this.renderDocUrl(row);
+      row.status = this.renderStatus(row);
       return row;
     });
 

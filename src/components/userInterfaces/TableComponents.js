@@ -30,6 +30,16 @@ const styles = {
   },
 };
 
+const tableHeaderRowCell = ({ ...restProps }) => (
+  <TableHeaderRow.Cell
+    {...restProps}
+    style={{
+      color: '#555555',
+      fontSize: '1em',
+    }}
+  />
+);
+
 class TableClasses extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -39,20 +49,20 @@ class TableClasses extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'displayName', title: 'Name' },
-        { name: 'name', title: 'Class' },
+        { name: 'displayName', title: 'Display Name' },
+        { name: 'name', title: 'Name' },
         { name: 'version', title: 'Version' },
+        { name: 'versionDate', title: 'Version Date' },
         { name: 'pipeline', title: 'Pipeline' },
         { name: 'owner', title: 'Owner' },
-        { name: 'moduleId', title: 'Module' },
       ],
       defaultColumnWidths: [
         { columnName: 'displayName', width: 200 },
         { columnName: 'name', width: 200 },
-        { columnName: 'version', width: 200 },
+        { columnName: 'version', width: 120 },
+        { columnName: 'versionDate', width: 170 },
         { columnName: 'pipeline', width: 200 },
         { columnName: 'owner', width: 200 },
-        { columnName: 'moduleId', width: 100 },
       ],
       data: [],
       totalCount: 0,
@@ -166,16 +176,16 @@ class TableClasses extends React.PureComponent {
     ) {
       const componentsLocal = components.pipelinesModulesList.edges.map(e => {
         return {
-          pipeline: e.node.pipeline ? e.node.pipeline.displayName : null,
+          displayName: e.node.module ? e.node.module.displayName : null,
           name: e.node.module ? e.node.module.name : null,
           version: e.node.module ? e.node.module.version : null,
-          moduleId: e.node.module ? e.node.module.moduleId : null,
+          versionDate: e.node.module ? e.node.module.versionDate : null,
+          pipeline: e.node.pipeline ? e.node.pipeline.displayName : null,
           owner: e.node.module
             ? e.node.module.user
               ? e.node.module.user.displayName
               : null
             : null,
-          displayName: e.node.module ? e.node.module.displayName : null,
         };
       });
       this.setState({
@@ -189,9 +199,9 @@ class TableClasses extends React.PureComponent {
     }
   };
 
-  renderName = rowData => {
-    if (rowData.pipeline) {
-      return <span title={rowData.pipeline}>{rowData.pipeline}</span>;
+  renderModule = rowData => {
+    if (rowData.displayName) {
+      return <span title={rowData.displayName}>{rowData.displayName}</span>;
     } else {
       return '-';
     }
@@ -213,9 +223,17 @@ class TableClasses extends React.PureComponent {
     }
   };
 
-  renderPipeline = rowData => {
-    if (rowData.moduleId) {
-      return <span title={rowData.moduleId}>{rowData.moduleId}</span>;
+  renderName = rowData => {
+    if (rowData.pipeline) {
+      return <span title={rowData.pipeline}>{rowData.pipeline}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderVersionDate = rowData => {
+    if (rowData.versionDate) {
+      return <span title={rowData.versionDate}>{rowData.versionDate}</span>;
     } else {
       return '-';
     }
@@ -224,14 +242,6 @@ class TableClasses extends React.PureComponent {
   renderOwner = rowData => {
     if (rowData.owner) {
       return <span title={rowData.owner}>{rowData.owner}</span>;
-    } else {
-      return '-';
-    }
-  };
-
-  renderModule = rowData => {
-    if (rowData.displayName) {
-      return <span title={rowData.displayName}>{rowData.displayName}</span>;
     } else {
       return '-';
     }
@@ -264,7 +274,7 @@ class TableClasses extends React.PureComponent {
         />
         <Table />
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
-        <TableHeaderRow />
+        <TableHeaderRow cellComponent={tableHeaderRowCell} />
         <TableColumnVisibility />
         <TableSelection
           selectByRowClick
@@ -297,12 +307,12 @@ class TableClasses extends React.PureComponent {
     const { classes } = this.props;
 
     data.map(row => {
-      row.pipeline = this.renderName(row);
+      row.displayName = this.renderModule(row);
       row.name = this.renderClass(row);
       row.version = this.renderVersion(row);
-      row.moduleId = this.renderPipeline(row);
+      row.versionDate = this.renderVersionDate(row);
+      row.pipeline = this.renderName(row);
       row.owner = this.renderOwner(row);
-      row.displayName = this.renderModule(row);
       return row;
     });
 

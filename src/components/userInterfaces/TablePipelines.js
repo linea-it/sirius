@@ -35,6 +35,16 @@ const styles = {
   },
 };
 
+const tableHeaderRowCell = ({ ...restProps }) => (
+  <TableHeaderRow.Cell
+    {...restProps}
+    style={{
+      color: '#555555',
+      fontSize: '1em',
+    }}
+  />
+);
+
 class TablePipelines extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -286,7 +296,7 @@ class TablePipelines extends React.PureComponent {
         />
         <Table />
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
-        <TableHeaderRow />
+        <TableHeaderRow cellComponent={tableHeaderRowCell} />
         <TableColumnVisibility />
         <TableSelection
           selectByRowClick
