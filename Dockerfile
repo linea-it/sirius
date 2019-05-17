@@ -9,18 +9,18 @@ FROM nginx:latest
 RUN chgrp nginx /var/cache/nginx/
 RUN chmod -R g+w /var/cache/nginx/
 RUN sed --regexp-extended --in-place=.bak 's%^pid\s+/var/run/nginx.pid;%pid /var/tmp/nginx.pid;%' /etc/nginx/nginx.conf
-COPY --from=builder /src/app/build /var/www/my-workspace
-RUN chgrp nginx /var/www/my-workspace
-RUN chmod -R g+w /var/www/my-workspace
+COPY --from=builder /src/app/build /var/www/user-interface
+RUN chgrp nginx /var/www/user-interface
+RUN chmod -R g+w /var/www/user-interface
 COPY nginx-proxy.conf /etc/nginx/conf.d/default.conf
 
 
 
 # RUNTIME ENV
-COPY env.sh /var/www/my-workspace
-COPY .env.template /var/www/my-workspace/.env
-RUN chmod +x /var/www/my-workspace/env.sh
-WORKDIR /var/www/my-workspace
+COPY env.sh /var/www/user-interface
+COPY .env.template /var/www/user-interface/.env
+RUN chmod +x /var/www/user-interface/env.sh
+WORKDIR /var/www/user-interface
 
 # Start Nginx server recreating env-config.js
-CMD ["/bin/bash", "-c", "/var/www/my-workspace/env.sh && nginx -g \"daemon off;\""]
+CMD ["/bin/bash", "-c", "/var/www/user-interface/env.sh && nginx -g \"daemon off;\""]
