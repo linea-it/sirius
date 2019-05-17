@@ -1,12 +1,13 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import Paper from '@material-ui/core/Paper';
-// import Icon from '@material-ui/core/Icon';
 import { withStyles } from '@material-ui/core/styles';
 import {
   PagingState,
   CustomPaging,
   SelectionState,
+  SortingState,
+  SearchState,
 } from '@devexpress/dx-react-grid';
 import {
   Grid,
@@ -18,6 +19,7 @@ import {
   ColumnChooser,
   Toolbar,
   TableSelection,
+  SearchPanel,
 } from '@devexpress/dx-react-grid-material-ui';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -30,12 +32,41 @@ const styles = {
     paddingTop: '10px',
   },
   itemLink: {
-    color: 'blue',
     cursor: 'pointer',
-    textDecoration: 'underline',
     lineHeight: '1.3',
   },
+  btn: {
+    textTransform: 'none',
+    padding: '1px 5px',
+    width: '6em',
+    minHeight: '1em',
+    display: 'block',
+    textAlign: 'center',
+    lineHeight: '2',
+    boxShadow:
+      '0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)',
+    borderRadius: '4px',
+    boxSizing: 'border-box',
+  },
+  btnSuccess: {
+    backgroundColor: 'green',
+    color: '#fff',
+  },
+  btnDeprecated: {
+    backgroundColor: '#ffba01',
+    color: '#000',
+  },
 };
+
+const tableHeaderRowCell = ({ ...restProps }) => (
+  <TableHeaderRow.Cell
+    {...restProps}
+    style={{
+      color: '#555555',
+      fontSize: '1em',
+    }}
+  />
+);
 
 class TablePipelines extends React.PureComponent {
   constructor(props) {
@@ -46,24 +77,31 @@ class TablePipelines extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'displayName', title: 'Pipeline Name' },
+        { name: 'fields_display_name', title: 'Display Name' },
+        { name: 'fields_field_name', title: 'Field Name' },
+        { name: 'fields_install_date', title: 'Install Date' },
+        { name: 'fields_release_date', title: 'Release Date' },
+        { name: 'fields_start_date', title: 'Start Date' },
+        { name: 'fields_discovery_date', title: 'Discovery Date' },
+        { name: 'release_name', title: 'Release Name' },
         { name: 'name', title: 'Name' },
-        { name: 'versionDate', title: 'Version Date' },
-        { name: 'owner', title: 'Owner' },
-        { name: 'group', title: 'Group' },
-        { name: 'stage', title: 'Stage' },
-        { name: 'readme', title: 'Readme' },
+        { name: 'version', title: 'Version' },
+        { name: 'fields_status', title: 'Status' },
       ],
       defaultColumnWidths: [
-        { columnName: 'displayName', width: 200 },
-        { columnName: 'name', width: 200 },
-        { columnName: 'versionDate', width: 200 },
-        { columnName: 'owner', width: 200 },
-        { columnName: 'group', width: 200 },
-        { columnName: 'stage', width: 200 },
-        { columnName: 'readme', width: 100 },
+        { columnName: 'fields_display_name', width: 150 },
+        { columnName: 'fields_field_name', width: 200 },
+        { columnName: 'fields_install_date', width: 130 },
+        { columnName: 'fields_release_date', width: 130 },
+        { columnName: 'fields_start_date', width: 130 },
+        { columnName: 'fields_discovery_date', width: 100 },
+        { columnName: 'release_name', width: 100 },
+        { columnName: 'name', width: 100 },
+        { columnName: 'version', width: 100 },
+        { columnName: 'fields_status', width: 100 },
       ],
       data: [],
+      sorting: [{ columnName: 'fields_display_name', direction: 'desc' }],
       totalCount: 0,
       pageSize: 10,
       pageSizes: [5, 10, 15],
@@ -71,6 +109,7 @@ class TablePipelines extends React.PureComponent {
       loading: true,
       after: '',
       selection: [],
+      searchValue: '',
     };
   }
 
@@ -81,6 +120,16 @@ class TablePipelines extends React.PureComponent {
   componentDidMount() {
     this.loadData();
   }
+
+  changeSorting = sorting => {
+    this.setState(
+      {
+        loading: true,
+        sorting,
+      },
+      () => this.loadData()
+    );
+  };
 
   changeCurrentPage = currentPage => {
     var offset = currentPage * this.state.pageSize;
@@ -106,6 +155,16 @@ class TablePipelines extends React.PureComponent {
         loading: true,
         pageSize,
         currentPage,
+      },
+      () => this.loadData()
+    );
+  };
+
+  changeSearchValue = searchValue => {
+    this.setState(
+      {
+        loading: true,
+        searchValue,
       },
       () => this.loadData()
     );
@@ -146,11 +205,11 @@ class TablePipelines extends React.PureComponent {
     });
   };
 
-  decodeTotalCount = pipelines => {
-    if (pipelines !== null) {
-      const pipelinesLocal = pipelines.pipelinesList.pageInfo.endCursor;
+  decodeTotalCount = fields => {
+    if (fields !== null) {
+      const fieldsLocal = fields.fieldsList.pageInfo.endCursor;
 
-      const decodeString = window.atob(pipelinesLocal);
+      const decodeString = window.atob(fieldsLocal);
 
       const totalCount = decodeString.split(':')[1];
 
@@ -159,32 +218,38 @@ class TablePipelines extends React.PureComponent {
   };
 
   loadData = async () => {
-    const { pageSize, after } = this.state;
+    const { sorting, pageSize, after, searchValue } = this.state;
     let { totalCount } = this.state;
 
     this.clearData();
-    const pipelinesTotal = await Centaurus.getAllPipelinesTotalCount();
-    totalCount = this.decodeTotalCount(pipelinesTotal);
+    const fieldsTotal = await Centaurus.getAllFieldsTotalCount();
+    totalCount = this.decodeTotalCount(fieldsTotal);
 
-    const pipelines = await Centaurus.getAllPipelines(pageSize, after);
-    if (pipelines && pipelines.pipelinesList && pipelines.pipelinesList.edges) {
-      const pipelinesLocal = pipelines.pipelinesList.edges.map(row => {
+    const fields = await Centaurus.getAllFields(
+      sorting,
+      pageSize,
+      after,
+      searchValue
+    );
+    if (fields && fields.fieldsList && fields.fieldsList.edges) {
+      const fieldsLocal = fields.fieldsList.edges.map(row => {
         return {
-          displayName: row.node.displayName,
-          name: row.node.name,
-          versionDate: row.node.versionDate,
-          owner: row.node.user ? row.node.user.displayName : null,
-          group: row.node.group ? row.node.group.displayName : null,
-          stage: row.node.pipelineStage
-            ? row.node.pipelineStage.displayName
-            : null,
-          readme: row.node.readme,
+          fields_display_name: row.node.displayName,
+          fields_field_name: row.node.fieldName,
+          fields_install_date: row.node.installDate,
+          fields_release_date: row.node.releaseDate,
+          fields_start_date: row.node.startDate,
+          fields_discovery_date: row.node.discoveryDate,
+          release_name: row.node.releaseTag.releaseDisplayName,
+          name: row.node.releaseTag.name,
+          version: row.node.releaseTag.version,
+          fields_status: row.node.status,
         };
       });
       this.setState({
-        data: pipelinesLocal,
+        data: fieldsLocal,
         totalCount: parseInt(totalCount),
-        cursor: pipelines.pipelinesList.pageInfo,
+        cursor: fields.fieldsList.pageInfo,
         loading: false,
       });
     } else {
@@ -192,10 +257,132 @@ class TablePipelines extends React.PureComponent {
     }
   };
 
+  renderFieldName = rowData => {
+    if (rowData.fields_field_name) {
+      return (
+        <span title={rowData.fields_field_name}>
+          {rowData.fields_field_name}
+        </span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderDisplayName = rowData => {
+    if (rowData.fields_display_name) {
+      return (
+        <span title={rowData.fields_display_name}>
+          {rowData.fields_display_name}
+        </span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderInstallDate = rowData => {
+    if (rowData.fields_install_date) {
+      return (
+        <span title={rowData.fields_install_date}>
+          {rowData.fields_install_date}
+        </span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderReleaseDate = rowData => {
+    if (rowData.fields_release_date) {
+      return (
+        <span title={rowData.fields_release_date}>
+          {rowData.fields_release_date}
+        </span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderStartDate = rowData => {
+    if (rowData.fields_start_date) {
+      return (
+        <span title={rowData.fields_start_date}>
+          {rowData.fields_start_date}
+        </span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderDiscoveryDate = rowData => {
+    if (rowData.fields_discovery_date) {
+      return (
+        <span title={rowData.fields_discovery_date}>
+          {rowData.fields_discovery_date}
+        </span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderName = rowData => {
+    if (rowData.name) {
+      return <span title={rowData.name}>{rowData.name}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderVersion = rowData => {
+    if (rowData.version) {
+      return <span title={rowData.version}>{rowData.version}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderReleaseDisplayName = rowData => {
+    if (rowData.release_name) {
+      return <span title={rowData.release_name}>{rowData.release_name}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderStatus = rowData => {
+    const { classes } = this.props;
+    if (rowData.fields_status) {
+      return (
+        <span
+          className={classes.btn}
+          style={styles.btnSuccess}
+          title={rowData.fields_status}
+        >
+          Available
+        </span>
+      );
+    } else {
+      return (
+        <span
+          className={classes.btn}
+          style={styles.btnDeprecated}
+          title={rowData.fields_status}
+        >
+          Deprecated
+        </span>
+      );
+    }
+  };
+
   renderTable = () => {
     const {
       data,
       columns,
+      sorting,
       pageSize,
       pageSizes,
       currentPage,
@@ -206,6 +393,16 @@ class TablePipelines extends React.PureComponent {
 
     return (
       <Grid rows={data} columns={columns}>
+        <SearchState onValueChange={this.changeSearchValue} />
+        <SortingState
+          sorting={sorting}
+          onSortingChange={this.changeSorting}
+          columnExtensions={[
+            { columnName: 'name', sortingEnabled: false },
+            { columnName: 'version', sortingEnabled: false },
+            { columnName: 'release_name', sortingEnabled: false },
+          ]}
+        />
         <PagingState
           currentPage={currentPage}
           onCurrentPageChange={this.changeCurrentPage}
@@ -219,7 +416,10 @@ class TablePipelines extends React.PureComponent {
         />
         <Table />
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
-        <TableHeaderRow />
+        <TableHeaderRow
+          cellComponent={tableHeaderRowCell}
+          showSortingControls
+        />
         <TableColumnVisibility />
         <TableSelection
           selectByRowClick
@@ -228,6 +428,7 @@ class TablePipelines extends React.PureComponent {
         />
         <PagingPanel pageSizes={pageSizes} />
         <Toolbar />
+        <SearchPanel />
         <ColumnChooser />
       </Grid>
     );
@@ -248,8 +449,22 @@ class TablePipelines extends React.PureComponent {
   };
 
   render() {
-    const { loading } = this.state;
+    const { loading, data } = this.state;
     const { classes } = this.props;
+
+    data.map(row => {
+      row.fields_display_name = this.renderDisplayName(row);
+      row.fields_field_name = this.renderFieldName(row);
+      row.fields_install_date = this.renderInstallDate(row);
+      row.fields_release_date = this.renderReleaseDate(row);
+      row.fields_start_date = this.renderStartDate(row);
+      row.fields_discovery_date = this.renderDiscoveryDate(row);
+      row.release_name = this.renderReleaseDisplayName(row);
+      row.name = this.renderName(row);
+      row.version = this.renderVersion(row);
+      row.fields_status = this.renderStatus(row);
+      return row;
+    });
 
     return (
       <Paper className={classes.wrapPaper}>
