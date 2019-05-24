@@ -7,6 +7,7 @@ import {
   PagingState,
   CustomPaging,
   SelectionState,
+  SearchState,
 } from '@devexpress/dx-react-grid';
 import {
   Grid,
@@ -18,6 +19,7 @@ import {
   ColumnChooser,
   Toolbar,
   TableSelection,
+  SearchPanel,
 } from '@devexpress/dx-react-grid-material-ui';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -79,6 +81,7 @@ class TablePipelines extends React.PureComponent {
       loading: true,
       after: '',
       selection: [],
+      searchValue: '',
     };
   }
 
@@ -114,6 +117,16 @@ class TablePipelines extends React.PureComponent {
         loading: true,
         pageSize,
         currentPage,
+      },
+      () => this.loadData()
+    );
+  };
+
+  changeSearchValue = searchValue => {
+    this.setState(
+      {
+        loading: true,
+        searchValue,
       },
       () => this.loadData()
     );
@@ -167,14 +180,18 @@ class TablePipelines extends React.PureComponent {
   };
 
   loadData = async () => {
-    const { pageSize, after } = this.state;
+    const { pageSize, after, searchValue } = this.state;
     let { totalCount } = this.state;
 
     this.clearData();
     const pipelinesTotal = await Centaurus.getAllPipelinesTotalCount();
     totalCount = this.decodeTotalCount(pipelinesTotal);
 
-    const pipelines = await Centaurus.getAllPipelines(pageSize, after);
+    const pipelines = await Centaurus.getAllPipelines(
+      pageSize,
+      after,
+      searchValue
+    );
     if (pipelines && pipelines.pipelinesList && pipelines.pipelinesList.edges) {
       const pipelinesLocal = pipelines.pipelinesList.edges.map(row => {
         return {
@@ -283,6 +300,7 @@ class TablePipelines extends React.PureComponent {
 
     return (
       <Grid rows={data} columns={columns}>
+        <SearchState onValueChange={this.changeSearchValue} />
         <PagingState
           currentPage={currentPage}
           onCurrentPageChange={this.changeCurrentPage}
@@ -305,6 +323,7 @@ class TablePipelines extends React.PureComponent {
         />
         <PagingPanel pageSizes={pageSizes} />
         <Toolbar />
+        <SearchPanel />
         <ColumnChooser />
       </Grid>
     );
