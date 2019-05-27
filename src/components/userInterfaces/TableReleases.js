@@ -53,8 +53,8 @@ const styles = {
     color: '#fff',
   },
   btnDeprecated: {
-    backgroundColor: '#ffba01',
-    color: '#000',
+    backgroundColor: 'red',
+    color: '#fff',
   },
 };
 
@@ -77,25 +77,25 @@ class TablePipelines extends React.PureComponent {
   get initialState() {
     return {
       columns: [
+        { name: 'release_name', title: 'Release' },
         { name: 'fields_display_name', title: 'Display Name' },
         { name: 'fields_field_name', title: 'Field Name' },
         { name: 'fields_install_date', title: 'Install Date' },
         { name: 'fields_release_date', title: 'Release Date' },
         { name: 'fields_start_date', title: 'Start Date' },
         { name: 'fields_discovery_date', title: 'Discovery Date' },
-        { name: 'release_name', title: 'Release Name' },
         { name: 'name', title: 'Name' },
         { name: 'version', title: 'Version' },
         { name: 'fields_status', title: 'Status' },
       ],
       defaultColumnWidths: [
+        { columnName: 'release_name', width: 150 },
         { columnName: 'fields_display_name', width: 150 },
         { columnName: 'fields_field_name', width: 200 },
         { columnName: 'fields_install_date', width: 130 },
         { columnName: 'fields_release_date', width: 130 },
         { columnName: 'fields_start_date', width: 130 },
         { columnName: 'fields_discovery_date', width: 100 },
-        { columnName: 'release_name', width: 100 },
         { columnName: 'name', width: 100 },
         { columnName: 'version', width: 100 },
         { columnName: 'fields_status', width: 100 },
@@ -110,6 +110,7 @@ class TablePipelines extends React.PureComponent {
       after: '',
       selection: [],
       searchValue: '',
+      hiddenColumnNames: ['name'],
     };
   }
 
@@ -120,6 +121,10 @@ class TablePipelines extends React.PureComponent {
   componentDidMount() {
     this.loadData();
   }
+
+  hiddenColumnNamesChange = hiddenColumnNames => {
+    this.setState({ hiddenColumnNames });
+  };
 
   changeSorting = sorting => {
     this.setState(
@@ -357,21 +362,13 @@ class TablePipelines extends React.PureComponent {
     const { classes } = this.props;
     if (rowData.fields_status) {
       return (
-        <span
-          className={classes.btn}
-          style={styles.btnSuccess}
-          title={rowData.fields_status}
-        >
+        <span className={classes.btn} style={styles.btnSuccess}>
           Available
         </span>
       );
     } else {
       return (
-        <span
-          className={classes.btn}
-          style={styles.btnDeprecated}
-          title={rowData.fields_status}
-        >
+        <span className={classes.btn} style={styles.btnDeprecated}>
           Deprecated
         </span>
       );
@@ -389,6 +386,7 @@ class TablePipelines extends React.PureComponent {
       totalCount,
       defaultColumnWidths,
       selection,
+      hiddenColumnNames,
     } = this.state;
 
     return (
@@ -420,7 +418,10 @@ class TablePipelines extends React.PureComponent {
           cellComponent={tableHeaderRowCell}
           showSortingControls
         />
-        <TableColumnVisibility />
+        <TableColumnVisibility
+          hiddenColumnNames={hiddenColumnNames}
+          onHiddenColumnNamesChange={this.hiddenColumnNamesChange}
+        />
         <TableSelection
           selectByRowClick
           highlightRow

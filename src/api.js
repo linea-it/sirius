@@ -101,7 +101,7 @@ export default class Centaurus {
     }
   }
 
-  static async getAllPipelines(pageSize, after) {
+  static async getAllPipelines(pageSize, after, searchValue) {
     var strAfter = '';
 
     if (after !== null) {
@@ -111,7 +111,7 @@ export default class Centaurus {
     try {
       const pipelines = await client.query(`
       {
-        pipelinesList(first: ${pageSize} ${strAfter}) {
+        pipelinesList(search: {text: "${searchValue}", columns: [pipelines_name, pipelines_display_name, pipelines_version_date]}, first: ${pageSize} ${strAfter}) {
           edges {
             node {
               name
