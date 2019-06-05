@@ -89,6 +89,7 @@ class TablePipelines extends React.PureComponent {
         { name: 'fields_status', title: 'Status' },
       ],
       defaultColumnWidths: [
+        { columnName: 'release_name', width: 150 },
         { columnName: 'fields_display_name', width: 150 },
         { columnName: 'fields_field_name', width: 200 },
         { columnName: 'releasetag_release_display_name', width: 150 },

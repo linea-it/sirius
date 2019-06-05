@@ -197,7 +197,7 @@ class TablePipelines extends React.PureComponent {
       after,
       searchValue
     );
-
+    
     if (pipelines && pipelines.pipelinesList && pipelines.pipelinesList.edges) {
       const pipelinesLocal = pipelines.pipelinesList.edges.map(row => {
         return {

@@ -11,24 +11,6 @@ const client = new Lokka({
 });
 
 export default class Centaurus {
-  // static async getAllComponentsTotalCount() {
-  //   try {
-  //     const components = await client.query(`
-  //       {
-  //         pipelinesModulesList {
-  //           pageInfo {
-  //             startCursor
-  //             endCursor
-  //           }
-  //         }
-  //       }
-  //     `);
-  //     return components;
-  //   } catch (e) {
-  //     return null;
-  //   }
-  // }
-
   static async getAllPipelines(sorting, pageSize, after, searchValue) {
     const sort = `${sorting[0].columnName}_${sorting[0].direction}`;
     var strAfter = '';
