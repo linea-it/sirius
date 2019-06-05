@@ -63,7 +63,7 @@ class TablePipelines extends React.PureComponent {
         { name: 'grouppypelines_display_name', title: 'Group' },
         { name: 'pipelinestage_display_name', title: 'Stage' },
         { name: 'tguser_display_name', title: 'Owner' },
-        { name: 'pipelines_readme', title: 'Description' },
+        { name: 'btn_pipelines_readme', title: 'Description' },
         { name: 'user', title: 'User Manual' },
         { name: 'history', title: 'History' },
       ],
@@ -74,7 +74,7 @@ class TablePipelines extends React.PureComponent {
         { columnName: 'grouppypelines_display_name', width: 200 },
         { columnName: 'pipelinestage_display_name', width: 200 },
         { columnName: 'tguser_display_name', width: 200 },
-        { columnName: 'pipelines_readme', width: 100 },
+        { columnName: 'btn_pipelines_readme', width: 100 },
         { columnName: 'user', width: 100 },
         { columnName: 'history', width: 100 },
       ],
@@ -354,6 +354,7 @@ class TablePipelines extends React.PureComponent {
           sorting={sorting}
           onSortingChange={this.changeSorting}
           columnExtensions={[
+            { columnName: 'btn_pipelines_readme', sortingEnabled: false },
             { columnName: 'user', sortingEnabled: false },
             { columnName: 'history', sortingEnabled: false },
           ]}
@@ -417,7 +418,7 @@ class TablePipelines extends React.PureComponent {
       row.tguser_display_name = this.renderOwner(row);
       row.grouppypelines_display_name = this.renderGroup(row);
       row.pipelinestage_display_name = this.renderStage(row);
-      row.pipelines_readme = this.renderReadme(row);
+      row.btn_pipelines_readme = this.renderReadme(row);
       row.user = this.renderUserManual(row);
       row.history = this.renderHistory(row);
       return row;
