@@ -5,6 +5,7 @@ import Icon from '@material-ui/core/Icon';
 import { withStyles } from '@material-ui/core/styles';
 import {
   PagingState,
+  SortingState,
   CustomPaging,
   SelectionState,
   SearchState,
@@ -56,24 +57,29 @@ class TablePipelines extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'displayName', title: 'Pipeline Name' },
-        { name: 'name', title: 'Name' },
-        { name: 'versionDate', title: 'Version Date' },
-        { name: 'owner', title: 'Owner' },
-        { name: 'group', title: 'Group' },
-        { name: 'stage', title: 'Stage' },
-        { name: 'btnReadme', title: 'Readme' },
+        { name: 'pipelines_display_name', title: 'Pipeline' },
+        { name: 'pipelines_name', title: 'Name' },
+        { name: 'pipelines_version_date', title: 'Version Date' },
+        { name: 'grouppypelines_display_name', title: 'Group' },
+        { name: 'pipelinestage_display_name', title: 'Stage' },
+        { name: 'tguser_display_name', title: 'Owner' },
+        { name: 'pipelines_readme', title: 'Description' },
+        { name: 'user', title: 'User Manual' },
+        { name: 'history', title: 'History' },
       ],
       defaultColumnWidths: [
-        { columnName: 'displayName', width: 200 },
-        { columnName: 'name', width: 200 },
-        { columnName: 'versionDate', width: 200 },
-        { columnName: 'owner', width: 200 },
-        { columnName: 'group', width: 200 },
-        { columnName: 'stage', width: 200 },
-        { columnName: 'btnReadme', width: 100 },
+        { columnName: 'pipelines_display_name', width: 200 },
+        { columnName: 'pipelines_name', width: 200 },
+        { columnName: 'pipelines_version_date', width: 200 },
+        { columnName: 'grouppypelines_display_name', width: 200 },
+        { columnName: 'pipelinestage_display_name', width: 200 },
+        { columnName: 'tguser_display_name', width: 200 },
+        { columnName: 'pipelines_readme', width: 100 },
+        { columnName: 'user', width: 100 },
+        { columnName: 'history', width: 100 },
       ],
       data: [],
+      sorting: [{ columnName: 'pipelines_display_name', direction: 'desc' }],
       totalCount: 0,
       pageSize: 10,
       pageSizes: [5, 10, 15],
@@ -82,6 +88,7 @@ class TablePipelines extends React.PureComponent {
       after: '',
       selection: [],
       searchValue: '',
+      hiddenColumnNames: ['grouppypelines_display_name'],
     };
   }
 
@@ -92,6 +99,20 @@ class TablePipelines extends React.PureComponent {
   componentDidMount() {
     this.loadData();
   }
+
+  hiddenColumnNamesChange = hiddenColumnNames => {
+    this.setState({ hiddenColumnNames });
+  };
+
+  changeSorting = sorting => {
+    this.setState(
+      {
+        loading: true,
+        sorting,
+      },
+      () => this.loadData()
+    );
+  };
 
   changeCurrentPage = currentPage => {
     var offset = currentPage * this.state.pageSize;
@@ -167,48 +188,36 @@ class TablePipelines extends React.PureComponent {
     });
   };
 
-  decodeTotalCount = pipelines => {
-    if (pipelines !== null) {
-      const pipelinesLocal = pipelines.pipelinesList.pageInfo.endCursor;
-
-      const decodeString = window.atob(pipelinesLocal);
-
-      const totalCount = decodeString.split(':')[1];
-
-      return totalCount;
-    }
-  };
-
   loadData = async () => {
-    const { pageSize, after, searchValue } = this.state;
-    let { totalCount } = this.state;
-
-    this.clearData();
-    const pipelinesTotal = await Centaurus.getAllPipelinesTotalCount();
-    totalCount = this.decodeTotalCount(pipelinesTotal);
+    const { sorting, pageSize, after, searchValue } = this.state;
 
     const pipelines = await Centaurus.getAllPipelines(
+      sorting,
       pageSize,
       after,
       searchValue
     );
+
     if (pipelines && pipelines.pipelinesList && pipelines.pipelinesList.edges) {
       const pipelinesLocal = pipelines.pipelinesList.edges.map(row => {
         return {
-          displayName: row.node.displayName,
-          name: row.node.name,
-          versionDate: row.node.versionDate,
-          owner: row.node.user ? row.node.user.displayName : null,
-          group: row.node.group ? row.node.group.displayName : null,
-          stage: row.node.pipelineStage
+          pipelines_display_name: row.node.displayName,
+          pipelines_name: row.node.name,
+          pipelines_version_date: row.node.versionDate.split('T')[0],
+          pipelines_version_hour: row.node.versionDate.split('T')[1],
+          grouppypelines_display_name: row.node.group
+            ? row.node.group.displayName
+            : null,
+          pipelinestage_display_name: row.node.pipelineStage
             ? row.node.pipelineStage.displayName
             : null,
-          readme: row.node.readme,
+          tguser_display_name: row.node.user ? row.node.user.displayName : null,
+          pipelines_readme: row.node.readme,
         };
       });
       this.setState({
         data: pipelinesLocal,
-        totalCount: parseInt(totalCount),
+        totalCount: parseInt(pipelines.pipelinesList.totalCount),
         cursor: pipelines.pipelinesList.pageInfo,
         loading: false,
       });
@@ -218,48 +227,86 @@ class TablePipelines extends React.PureComponent {
   };
 
   renderPipeline = rowData => {
-    if (rowData.displayName) {
-      return <span title={rowData.displayName}>{rowData.displayName}</span>;
+    if (rowData.pipelines_display_name) {
+      return (
+        <span title={rowData.pipelines_display_name}>
+          {rowData.pipelines_display_name}
+        </span>
+      );
     } else {
       return '-';
     }
   };
 
   renderName = rowData => {
-    if (rowData.name) {
-      return <span title={rowData.name}>{rowData.name}</span>;
+    if (rowData.pipelines_name) {
+      return (
+        <span title={rowData.pipelines_name}>{rowData.pipelines_name}</span>
+      );
     } else {
       return '-';
     }
   };
 
   renderVersion = rowData => {
-    if (rowData.versionDate) {
-      return <span title={rowData.versionDate}>{rowData.versionDate}</span>;
+    if (rowData.pipelines_version_date) {
+      return (
+        <span title={rowData.pipelines_version_hour}>
+          {rowData.pipelines_version_date}
+        </span>
+      );
     } else {
       return '-';
     }
   };
 
   renderOwner = rowData => {
-    if (rowData.owner) {
-      return <span title={rowData.owner}>{rowData.owner}</span>;
+    if (rowData.tguser_display_name) {
+      return (
+        <span title={rowData.tguser_display_name}>
+          {rowData.tguser_display_name}
+        </span>
+      );
     } else {
       return '-';
     }
   };
 
   renderGroup = rowData => {
-    if (rowData.group) {
-      return <span title={rowData.group}>{rowData.group}</span>;
+    if (rowData.grouppypelines_display_name) {
+      return (
+        <span title={rowData.grouppypelines_display_name}>
+          {rowData.grouppypelines_display_name}
+        </span>
+      );
     } else {
       return '-';
     }
   };
 
   renderStage = rowData => {
-    if (rowData.stage) {
-      return <span title={rowData.stage}>{rowData.stage}</span>;
+    if (rowData.pipelinestage_display_name) {
+      return (
+        <span title={rowData.pipelinestage_display_name}>
+          {rowData.pipelinestage_display_name}
+        </span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderUserManual = rowData => {
+    if (rowData.user) {
+      return <span title={rowData.user}>{rowData.user}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderHistory = rowData => {
+    if (rowData.history) {
+      return <span title={rowData.history}>{rowData.history}</span>;
     } else {
       return '-';
     }
@@ -271,12 +318,12 @@ class TablePipelines extends React.PureComponent {
 
   renderReadme = rowData => {
     const { classes } = this.props;
-    if (rowData.readme !== null) {
+    if (rowData.pipelines_readme !== null) {
       return (
         <span
           className={classes.itemLink}
-          title={rowData.readme}
-          onClick={() => this.handleClickReadme(rowData.readme)}
+          title={rowData.pipelines_readme}
+          onClick={() => this.handleClickReadme(rowData.pipelines_readme)}
         >
           <Icon>link</Icon>
         </span>
@@ -296,11 +343,21 @@ class TablePipelines extends React.PureComponent {
       totalCount,
       defaultColumnWidths,
       selection,
+      sorting,
+      hiddenColumnNames,
     } = this.state;
 
     return (
       <Grid rows={data} columns={columns}>
         <SearchState onValueChange={this.changeSearchValue} />
+        <SortingState
+          sorting={sorting}
+          onSortingChange={this.changeSorting}
+          columnExtensions={[
+            { columnName: 'user', sortingEnabled: false },
+            { columnName: 'history', sortingEnabled: false },
+          ]}
+        />
         <PagingState
           currentPage={currentPage}
           onCurrentPageChange={this.changeCurrentPage}
@@ -314,8 +371,14 @@ class TablePipelines extends React.PureComponent {
         />
         <Table />
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
-        <TableHeaderRow cellComponent={tableHeaderRowCell} />
-        <TableColumnVisibility />
+        <TableHeaderRow
+          cellComponent={tableHeaderRowCell}
+          showSortingControls
+        />
+        <TableColumnVisibility
+          hiddenColumnNames={hiddenColumnNames}
+          onHiddenColumnNamesChange={this.hiddenColumnNamesChange}
+        />
         <TableSelection
           selectByRowClick
           highlightRow
@@ -348,13 +411,15 @@ class TablePipelines extends React.PureComponent {
     const { classes } = this.props;
 
     data.map(row => {
-      row.displayName = this.renderPipeline(row);
-      row.name = this.renderName(row);
-      row.versionDate = this.renderVersion(row);
-      row.owner = this.renderOwner(row);
-      row.group = this.renderGroup(row);
-      row.stage = this.renderStage(row);
-      row.btnReadme = this.renderReadme(row);
+      row.pipelines_display_name = this.renderPipeline(row);
+      row.pipelines_name = this.renderName(row);
+      row.pipelines_version_date = this.renderVersion(row);
+      row.tguser_display_name = this.renderOwner(row);
+      row.grouppypelines_display_name = this.renderGroup(row);
+      row.pipelinestage_display_name = this.renderStage(row);
+      row.pipelines_readme = this.renderReadme(row);
+      row.user = this.renderUserManual(row);
+      row.history = this.renderHistory(row);
       return row;
     });
 
