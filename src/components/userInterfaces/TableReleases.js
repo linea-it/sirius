@@ -77,27 +77,28 @@ class TablePipelines extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'release_name', title: 'Release' },
-        { name: 'fields_display_name', title: 'Display Name' },
-        { name: 'fields_field_name', title: 'Field Name' },
+        { name: 'fields_display_name', title: 'Dataset' },
+        { name: 'fields_field_name', title: 'Internal Name' },
+        { name: 'releasetag_release_display_name', title: 'Release' },
         { name: 'fields_install_date', title: 'Install Date' },
         { name: 'fields_release_date', title: 'Release Date' },
         { name: 'fields_start_date', title: 'Start Date' },
         { name: 'fields_discovery_date', title: 'Discovery Date' },
-        { name: 'name', title: 'Name' },
-        { name: 'version', title: 'Version' },
+        { name: 'releasetag_name', title: 'Name' },
+        { name: 'releasetag_version', title: 'Version' },
         { name: 'fields_status', title: 'Status' },
       ],
       defaultColumnWidths: [
         { columnName: 'release_name', width: 150 },
         { columnName: 'fields_display_name', width: 150 },
         { columnName: 'fields_field_name', width: 200 },
+        { columnName: 'releasetag_release_display_name', width: 150 },
         { columnName: 'fields_install_date', width: 130 },
         { columnName: 'fields_release_date', width: 130 },
         { columnName: 'fields_start_date', width: 130 },
         { columnName: 'fields_discovery_date', width: 100 },
-        { columnName: 'name', width: 100 },
-        { columnName: 'version', width: 100 },
+        { columnName: 'releasetag_name', width: 100 },
+        { columnName: 'releasetag_version', width: 100 },
         { columnName: 'fields_status', width: 100 },
       ],
       data: [],
@@ -110,7 +111,7 @@ class TablePipelines extends React.PureComponent {
       after: '',
       selection: [],
       searchValue: '',
-      hiddenColumnNames: ['name'],
+      hiddenColumnNames: ['releasetag_name'],
     };
   }
 
@@ -210,25 +211,8 @@ class TablePipelines extends React.PureComponent {
     });
   };
 
-  decodeTotalCount = fields => {
-    if (fields !== null) {
-      const fieldsLocal = fields.fieldsList.pageInfo.endCursor;
-
-      const decodeString = window.atob(fieldsLocal);
-
-      const totalCount = decodeString.split(':')[1];
-
-      return totalCount;
-    }
-  };
-
   loadData = async () => {
     const { sorting, pageSize, after, searchValue } = this.state;
-    let { totalCount } = this.state;
-
-    this.clearData();
-    const fieldsTotal = await Centaurus.getAllFieldsTotalCount();
-    totalCount = this.decodeTotalCount(fieldsTotal);
 
     const fields = await Centaurus.getAllFields(
       sorting,
@@ -236,6 +220,7 @@ class TablePipelines extends React.PureComponent {
       after,
       searchValue
     );
+
     if (fields && fields.fieldsList && fields.fieldsList.edges) {
       const fieldsLocal = fields.fieldsList.edges.map(row => {
         return {
@@ -245,15 +230,16 @@ class TablePipelines extends React.PureComponent {
           fields_release_date: row.node.releaseDate,
           fields_start_date: row.node.startDate,
           fields_discovery_date: row.node.discoveryDate,
-          release_name: row.node.releaseTag.releaseDisplayName,
-          name: row.node.releaseTag.name,
-          version: row.node.releaseTag.version,
+          releasetag_release_display_name:
+            row.node.releaseTag.releaseDisplayName,
+          releasetag_name: row.node.releaseTag.name,
+          releasetag_version: row.node.releaseTag.version,
           fields_status: row.node.status,
         };
       });
       this.setState({
         data: fieldsLocal,
-        totalCount: parseInt(totalCount),
+        totalCount: parseInt(fields.fieldsList.totalCount),
         cursor: fields.fieldsList.pageInfo,
         loading: false,
       });
@@ -335,24 +321,34 @@ class TablePipelines extends React.PureComponent {
   };
 
   renderName = rowData => {
-    if (rowData.name) {
-      return <span title={rowData.name}>{rowData.name}</span>;
+    if (rowData.releasetag_name) {
+      return (
+        <span title={rowData.releasetag_name}>{rowData.releasetag_name}</span>
+      );
     } else {
       return '-';
     }
   };
 
   renderVersion = rowData => {
-    if (rowData.version) {
-      return <span title={rowData.version}>{rowData.version}</span>;
+    if (rowData.releasetag_version) {
+      return (
+        <span title={rowData.releasetag_version}>
+          {rowData.releasetag_version}
+        </span>
+      );
     } else {
       return '-';
     }
   };
 
   renderReleaseDisplayName = rowData => {
-    if (rowData.release_name) {
-      return <span title={rowData.release_name}>{rowData.release_name}</span>;
+    if (rowData.releasetag_release_display_name) {
+      return (
+        <span title={rowData.releasetag_release_display_name}>
+          {rowData.releasetag_release_display_name}
+        </span>
+      );
     } else {
       return '-';
     }
@@ -460,9 +456,9 @@ class TablePipelines extends React.PureComponent {
       row.fields_release_date = this.renderReleaseDate(row);
       row.fields_start_date = this.renderStartDate(row);
       row.fields_discovery_date = this.renderDiscoveryDate(row);
-      row.release_name = this.renderReleaseDisplayName(row);
-      row.name = this.renderName(row);
-      row.version = this.renderVersion(row);
+      row.releasetag_release_display_name = this.renderReleaseDisplayName(row);
+      row.releasetag_name = this.renderName(row);
+      row.releasetag_version = this.renderVersion(row);
       row.fields_status = this.renderStatus(row);
       return row;
     });

@@ -9,7 +9,7 @@ const styles = {
     flexGrow: 1,
   },
   menuButton: {
-    marginLeft: -18,
+    marginLeft: -13,
     marginRight: 10,
   },
   AppBar: {

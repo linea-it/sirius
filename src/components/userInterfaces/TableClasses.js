@@ -6,6 +6,8 @@ import {
   PagingState,
   CustomPaging,
   SelectionState,
+  SortingState,
+  SearchState,
 } from '@devexpress/dx-react-grid';
 import {
   Grid,
@@ -17,6 +19,7 @@ import {
   ColumnChooser,
   Toolbar,
   TableSelection,
+  SearchPanel,
 } from '@devexpress/dx-react-grid-material-ui';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -49,24 +52,26 @@ class TableClasses extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'className', title: 'Name' },
-        { name: 'displayName', title: 'Class' },
-        { name: 'typeDisplayName', title: 'Type' },
-        { name: 'typeName', title: 'Type Name' },
+        { name: 'productclass_display_name', title: 'Class' },
+        { name: 'productclass_class_name', title: 'Internal Name' },
+        { name: 'producttype_display_name', title: 'Type' },
+        { name: 'producttype_type_name', title: 'Type Name' },
       ],
       defaultColumnWidths: [
-        { columnName: 'className', width: 300 },
-        { columnName: 'displayName', width: 300 },
-        { columnName: 'typeDisplayName', width: 300 },
-        { columnName: 'typeName', width: 300 },
+        { columnName: 'productclass_display_name', width: 300 },
+        { columnName: 'productclass_class_name', width: 300 },
+        { columnName: 'producttype_display_name', width: 300 },
+        { columnName: 'producttype_type_name', width: 300 },
       ],
       data: [],
+      sorting: [{ columnName: 'productclass_display_name', direction: 'desc' }],
       totalCount: 0,
       pageSize: 10,
       pageSizes: [5, 10, 15],
       currentPage: 0,
       loading: true,
       after: '',
+      searchValue: '',
       selection: [],
     };
   }
@@ -78,6 +83,16 @@ class TableClasses extends React.PureComponent {
   componentDidMount() {
     this.loadData();
   }
+
+  changeSorting = sorting => {
+    this.setState(
+      {
+        loading: true,
+        sorting,
+      },
+      () => this.loadData()
+    );
+  };
 
   changeCurrentPage = currentPage => {
     var offset = currentPage * this.state.pageSize;
@@ -103,6 +118,16 @@ class TableClasses extends React.PureComponent {
         loading: true,
         pageSize,
         currentPage,
+      },
+      () => this.loadData()
+    );
+  };
+
+  changeSearchValue = searchValue => {
+    this.setState(
+      {
+        loading: true,
+        searchValue,
       },
       () => this.loadData()
     );
@@ -143,78 +168,83 @@ class TableClasses extends React.PureComponent {
     });
   };
 
-  decodeTotalCount = classes => {
-    if (classes !== null) {
-      const classesLocal = classes.productClassList.pageInfo.endCursor;
-
-      const decodeString = window.atob(classesLocal);
-
-      const totalCount = decodeString.split(':')[1];
-
-      return totalCount;
-    }
-  };
-
   loadData = async () => {
-    const { pageSize, after } = this.state;
-    let { totalCount } = this.state;
+    const { sorting, pageSize, after, searchValue } = this.state;
 
-    this.clearData();
-    const classesTotal = await Centaurus.getAllClassesTotalCount();
-    totalCount = this.decodeTotalCount(classesTotal);
+    const classes = await Centaurus.getAllClasses(
+      sorting,
+      pageSize,
+      after,
+      searchValue
+    );
 
-    const classes = await Centaurus.getAllClasses(pageSize, after);
     if (classes && classes.productClassList && classes.productClassList.edges) {
-      const classesLocal = classes.productClassList.edges.map(e => {
+      const classesLocal = classes.productClassList.edges.map(row => {
         return {
-          typeName: e.node.productType ? e.node.productType.typeName : null,
-          typeDisplayName: e.node.productType
-            ? e.node.productType.displayName
+          productclass_display_name: row.node.displayName,
+          productclass_class_name: row.node.className,
+          producttype_display_name: row.node.productType
+            ? row.node.productType.displayName
             : null,
-          className: e.node.className,
-          displayName: e.node.displayName,
+          producttype_type_name: row.node.productType
+            ? row.node.productType.typeName
+            : null,
         };
       });
       this.setState({
         data: classesLocal,
-        totalCount: parseInt(totalCount),
+        totalCount: parseInt(classes.productClassList.totalCount),
         cursor: classes.productClassList.pageInfo,
         loading: false,
       });
     } else {
-      return null;
+      this.clearData();
     }
   };
 
-  renderTypeName = rowData => {
-    if (rowData.typeName) {
-      return <span title={rowData.typeName}>{rowData.typeName}</span>;
-    } else {
-      return '-';
-    }
-  };
-
-  renderType = rowData => {
-    if (rowData.typeDisplayName) {
+  renderClass = rowData => {
+    if (rowData.productclass_class_name) {
       return (
-        <span title={rowData.typeDisplayName}>{rowData.typeDisplayName}</span>
+        <span title={rowData.productclass_class_name}>
+          {rowData.productclass_class_name}
+        </span>
       );
     } else {
       return '-';
     }
   };
 
-  renderClass = rowData => {
-    if (rowData.className) {
-      return <span title={rowData.className}>{rowData.className}</span>;
+  renderName = rowData => {
+    if (rowData.productclass_display_name) {
+      return (
+        <span title={rowData.productclass_display_name}>
+          {rowData.productclass_display_name}
+        </span>
+      );
     } else {
       return '-';
     }
   };
 
-  renderName = rowData => {
-    if (rowData.displayName) {
-      return <span title={rowData.displayName}>{rowData.displayName}</span>;
+  renderType = rowData => {
+    if (rowData.producttype_display_name) {
+      return (
+        <span title={rowData.producttype_display_name}>
+          {rowData.producttype_display_name}
+        </span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderTypeName = rowData => {
+    if (rowData.producttype_type_name) {
+      return (
+        <span title={rowData.producttype_type_name}>
+          {rowData.producttype_type_name}
+        </span>
+      );
     } else {
       return '-';
     }
@@ -224,6 +254,7 @@ class TableClasses extends React.PureComponent {
     const {
       data,
       columns,
+      sorting,
       pageSize,
       pageSizes,
       currentPage,
@@ -234,6 +265,8 @@ class TableClasses extends React.PureComponent {
 
     return (
       <Grid rows={data} columns={columns}>
+        <SearchState onValueChange={this.changeSearchValue} />
+        <SortingState sorting={sorting} onSortingChange={this.changeSorting} />
         <PagingState
           currentPage={currentPage}
           onCurrentPageChange={this.changeCurrentPage}
@@ -247,7 +280,10 @@ class TableClasses extends React.PureComponent {
         />
         <Table />
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
-        <TableHeaderRow cellComponent={tableHeaderRowCell} />
+        <TableHeaderRow
+          cellComponent={tableHeaderRowCell}
+          showSortingControls
+        />
         <TableColumnVisibility />
         <TableSelection
           selectByRowClick
@@ -256,6 +292,7 @@ class TableClasses extends React.PureComponent {
         />
         <PagingPanel pageSizes={pageSizes} />
         <Toolbar />
+        <SearchPanel />
         <ColumnChooser />
       </Grid>
     );
@@ -280,10 +317,10 @@ class TableClasses extends React.PureComponent {
     const { classes } = this.props;
 
     data.map(row => {
-      row.typeName = this.renderTypeName(row);
-      row.typeDisplayName = this.renderType(row);
-      row.className = this.renderClass(row);
-      row.displayName = this.renderName(row);
+      row.productclass_class_name = this.renderClass(row);
+      row.productclass_display_name = this.renderName(row);
+      row.producttype_display_name = this.renderType(row);
+      row.producttype_type_name = this.renderTypeName(row);
       return row;
     });
 

@@ -11,97 +11,8 @@ const client = new Lokka({
 });
 
 export default class Centaurus {
-  static async getAllPipelinesTotalCount() {
-    try {
-      const pipelines = await client.query(`
-        {
-          pipelinesList {
-            pageInfo {
-              startCursor
-              endCursor
-            }
-          }
-        }
-      `);
-      return pipelines;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static async getAllComponentsTotalCount() {
-    try {
-      const components = await client.query(`
-        {
-          pipelinesModulesList {
-            pageInfo {
-              startCursor
-              endCursor
-            }
-          }
-        }
-      `);
-      return components;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static async getAllClassesTotalCount() {
-    try {
-      const classes = await client.query(`
-        {
-          productClassList {
-            pageInfo {
-              startCursor
-              endCursor
-            }
-          }
-        }
-      `);
-      return classes;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static async getAllReleasesTotalCount() {
-    try {
-      const releases = await client.query(`
-        {
-          releaseTagList {
-            pageInfo {
-              startCursor
-              endCursor
-            }
-          }
-        }
-      `);
-      return releases;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static async getAllFieldsTotalCount() {
-    try {
-      const fields = await client.query(`
-        {
-          fieldsList {
-            pageInfo {
-              startCursor
-              endCursor
-            }
-          }
-        }
-      `);
-      return fields;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static async getAllPipelines(pageSize, after, searchValue) {
+  static async getAllPipelines(sorting, pageSize, after, searchValue) {
+    const sort = `${sorting[0].columnName}_${sorting[0].direction}`;
     var strAfter = '';
 
     if (after !== null) {
@@ -111,19 +22,24 @@ export default class Centaurus {
     try {
       const pipelines = await client.query(`
       {
-        pipelinesList(search: {text: "${searchValue}", columns: [pipelines_name, pipelines_display_name, pipelines_version_date]}, first: ${pageSize} ${strAfter}) {
+        pipelinesList(sort: [${sort}], search: {text: "${searchValue}", columns: [pipelines_name, pipelines_display_name, pipelines_version_date, pipeline_stage_display_name, group_pypelines_display_name, tg_user_display_name]}, first: ${pageSize} ${strAfter}) {
+          pageInfo {
+            startCursor
+            endCursor
+          }
+          totalCount
           edges {
             node {
               name
               displayName
               versionDate
-              user {
-                displayName
-              }
               group {
                 displayName
               }
               pipelineStage {
+                displayName
+              }
+              user {
                 displayName
               }
               readme
@@ -141,7 +57,8 @@ export default class Centaurus {
     }
   }
 
-  static async getAllComponents(pageSize, after) {
+  static async getAllComponents(sorting, pageSize, after, searchValue) {
+    const sort = `${sorting[0].columnName}_${sorting[0].direction}`;
     var strAfter = '';
 
     if (after !== null) {
@@ -151,19 +68,28 @@ export default class Centaurus {
     try {
       const components = await client.query(`
         {
-          pipelinesModulesList(first: ${pageSize} ${strAfter}) {
+          modulesList(sort: [${sort}], search: {text: "${searchValue}", columns: [modules_display_name, modules_name, modules_version, modules_version_date, tg_user_display_name, pipelines_display_name]}, first: ${pageSize} ${strAfter}){
+            pageInfo {
+              startCursor
+              endCursor
+            }
+            totalCount
             edges {
               node {
-                pipeline {
+                displayName
+                name
+                version
+                versionDate
+                user {
                   displayName
                 }
-                module {
-                  displayName
-                  name
-                  version
-                  versionDate
-                  user {
-                    displayName
+                pipelinesModules {
+                  edges {
+                    node {
+                      pipeline {
+                        displayName
+                      }
+                    }
                   }
                 }
               }
@@ -180,7 +106,8 @@ export default class Centaurus {
     }
   }
 
-  static async getAllClasses(pageSize, after) {
+  static async getAllClasses(sorting, pageSize, after, searchValue) {
+    const sort = `${sorting[0].columnName}_${sorting[0].direction}`;
     var strAfter = '';
 
     if (after !== null) {
@@ -190,7 +117,12 @@ export default class Centaurus {
     try {
       const classes = await client.query(`
         {
-          productClassList(first: ${pageSize} ${strAfter}) {
+          productClassList(sort: [${sort}], search: {text: "${searchValue}", columns: [product_class_class_name, product_class_display_name, product_type_display_name, product_type_type_name]}, first: ${pageSize} ${strAfter}) {
+            pageInfo {
+              startCursor
+              endCursor
+            }
+            totalCount
             edges {
               node {
                 className
@@ -213,41 +145,6 @@ export default class Centaurus {
     }
   }
 
-  static async getAllReleases(sorting, pageSize, after, searchValue) {
-    const sort = `${sorting[0].columnName}_${sorting[0].direction}`;
-    var strAfter = '';
-
-    if (after !== null) {
-      strAfter = `, after: "${after}"`;
-    }
-
-    try {
-      const releases = await client.query(`
-        {
-          releaseTagList(sort: [${sort}], search: "${searchValue}", first: ${pageSize} ${strAfter}) {
-            edges {
-              node {
-                releaseDisplayName
-                name
-                version
-                releaseDate
-                description
-                docUrl
-                tagId                
-              }
-            }
-          }
-        }
-      `);
-
-      return releases;
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log(e);
-      return null;
-    }
-  }
-
   static async getAllFields(sorting, pageSize, after, searchValue) {
     const sort = `${sorting[0].columnName}_${sorting[0].direction}`;
     var strAfter = '';
@@ -259,7 +156,12 @@ export default class Centaurus {
     try {
       const fields = await client.query(`
         {
-          fieldsList(onlyAvailable: false, sort: [${sort}], search: "${searchValue}", first: ${pageSize} ${strAfter}) {
+          fieldsList(onlyAvailable: false, sort: [${sort}], search: {text: "${searchValue}", columns: [fields_field_name, fields_display_name, fields_install_date, fields_release_date, fields_start_date, fields_discovery_date, fields_status, release_tag_release_display_name, release_tag_version, release_tag_name]}, first: ${pageSize} ${strAfter}) {
+            pageInfo {
+              startCursor
+              endCursor
+            }
+            totalCount
             edges {
               node {
                 fieldName

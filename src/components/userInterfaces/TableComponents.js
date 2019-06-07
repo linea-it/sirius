@@ -4,8 +4,10 @@ import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core/styles';
 import {
   PagingState,
+  SortingState,
   CustomPaging,
   SelectionState,
+  SearchState,
 } from '@devexpress/dx-react-grid';
 import {
   Grid,
@@ -17,6 +19,7 @@ import {
   ColumnChooser,
   Toolbar,
   TableSelection,
+  SearchPanel,
 } from '@devexpress/dx-react-grid-material-ui';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -49,22 +52,23 @@ class TableClasses extends React.PureComponent {
   get initialState() {
     return {
       columns: [
-        { name: 'displayName', title: 'Display Name' },
-        { name: 'name', title: 'Name' },
-        { name: 'version', title: 'Version' },
-        { name: 'versionDate', title: 'Version Date' },
-        { name: 'pipeline', title: 'Pipeline' },
-        { name: 'owner', title: 'Owner' },
+        { name: 'modules_display_name', title: 'Components' },
+        { name: 'modules_name', title: 'Internal Name' },
+        { name: 'modules_version', title: 'Version' },
+        { name: 'modules_version_date', title: 'Version Date' },
+        { name: 'pipelines_display_name', title: 'Pipeline' },
+        { name: 'tguser_display_name', title: 'Owner' },
       ],
       defaultColumnWidths: [
-        { columnName: 'displayName', width: 200 },
-        { columnName: 'name', width: 200 },
-        { columnName: 'version', width: 120 },
-        { columnName: 'versionDate', width: 170 },
-        { columnName: 'pipeline', width: 200 },
-        { columnName: 'owner', width: 200 },
+        { columnName: 'modules_display_name', width: 200 },
+        { columnName: 'modules_name', width: 200 },
+        { columnName: 'modules_version', width: 120 },
+        { columnName: 'modules_version_date', width: 170 },
+        { columnName: 'pipelines_display_name', width: 200 },
+        { columnName: 'tguser_display_name', width: 200 },
       ],
       data: [],
+      sorting: [{ columnName: 'modules_display_name', direction: 'desc' }],
       totalCount: 0,
       pageSize: 10,
       pageSizes: [5, 10, 15],
@@ -72,6 +76,7 @@ class TableClasses extends React.PureComponent {
       loading: true,
       after: '',
       selection: [],
+      searchValue: '',
     };
   }
 
@@ -82,6 +87,16 @@ class TableClasses extends React.PureComponent {
   componentDidMount() {
     this.loadData();
   }
+
+  changeSorting = sorting => {
+    this.setState(
+      {
+        loading: true,
+        sorting,
+      },
+      () => this.loadData()
+    );
+  };
 
   changeCurrentPage = currentPage => {
     var offset = currentPage * this.state.pageSize;
@@ -107,6 +122,16 @@ class TableClasses extends React.PureComponent {
         loading: true,
         pageSize,
         currentPage,
+      },
+      () => this.loadData()
+    );
+  };
+
+  changeSearchValue = searchValue => {
+    this.setState(
+      {
+        loading: true,
+        searchValue,
       },
       () => this.loadData()
     );
@@ -147,101 +172,104 @@ class TableClasses extends React.PureComponent {
     });
   };
 
-  decodeTotalCount = components => {
-    if (components !== null) {
-      const componentsLocal =
-        components.pipelinesModulesList.pageInfo.endCursor;
-
-      const decodeString = window.atob(componentsLocal);
-
-      const totalCount = decodeString.split(':')[1];
-
-      return totalCount;
-    }
-  };
-
   loadData = async () => {
-    const { pageSize, after } = this.state;
-    let { totalCount } = this.state;
+    const { sorting, pageSize, after, searchValue } = this.state;
 
-    this.clearData();
-    const componentsTotal = await Centaurus.getAllComponentsTotalCount();
-    totalCount = this.decodeTotalCount(componentsTotal);
+    const components = await Centaurus.getAllComponents(
+      sorting,
+      pageSize,
+      after,
+      searchValue
+    );
 
-    const components = await Centaurus.getAllComponents(pageSize, after);
-    if (
-      components &&
-      components.pipelinesModulesList &&
-      components.pipelinesModulesList.edges
-    ) {
-      const componentsLocal = components.pipelinesModulesList.edges.map(e => {
+    if (components && components.modulesList && components.modulesList.edges) {
+      const componentsLocal = components.modulesList.edges.map(row => {
         return {
-          displayName: e.node.module ? e.node.module.displayName : null,
-          name: e.node.module ? e.node.module.name : null,
-          version: e.node.module ? e.node.module.version : null,
-          versionDate: e.node.module ? e.node.module.versionDate : null,
-          pipeline: e.node.pipeline ? e.node.pipeline.displayName : null,
-          owner: e.node.module
-            ? e.node.module.user
-              ? e.node.module.user.displayName
-              : null
+          modules_display_name: row.node.displayName,
+          modules_name: row.node.name,
+          modules_version: row.node.version,
+          modules_version_date: row.node.versionDate
+            ? row.node.versionDate.split('T')[0]
             : null,
+          versionHour: row.node.versionDate
+            ? row.node.versionDate.split('T')[1]
+            : null,
+          pipelines_display_name: row.node.pipelinesModules.edges.map(edge => {
+            return edge.node.pipeline.displayName;
+          }),
+          tguser_display_name: row.node.user ? row.node.user.displayName : null,
         };
       });
       this.setState({
         data: componentsLocal,
-        totalCount: parseInt(totalCount),
-        cursor: components.pipelinesModulesList.pageInfo,
+        totalCount: parseInt(components.modulesList.totalCount),
+        cursor: components.modulesList.pageInfo,
         loading: false,
       });
     } else {
-      return null;
+      this.clearData();
     }
   };
 
   renderModule = rowData => {
-    if (rowData.displayName) {
-      return <span title={rowData.displayName}>{rowData.displayName}</span>;
-    } else {
-      return '-';
-    }
-  };
-
-  renderClass = rowData => {
-    if (rowData.name) {
-      return <span title={rowData.name}>{rowData.name}</span>;
-    } else {
-      return '-';
-    }
-  };
-
-  renderVersion = rowData => {
-    if (rowData.version) {
-      return <span title={rowData.version}>{rowData.version}</span>;
+    if (rowData.modules_display_name) {
+      return (
+        <span title={rowData.modules_display_name}>
+          {rowData.modules_display_name}
+        </span>
+      );
     } else {
       return '-';
     }
   };
 
   renderName = rowData => {
-    if (rowData.pipeline) {
-      return <span title={rowData.pipeline}>{rowData.pipeline}</span>;
+    if (rowData.modules_name) {
+      return <span title={rowData.modules_name}>{rowData.modules_name}</span>;
+    } else {
+      return '-';
+    }
+  };
+
+  renderVersion = rowData => {
+    if (rowData.modules_version) {
+      return (
+        <span title={rowData.modules_version}>{rowData.modules_version}</span>
+      );
     } else {
       return '-';
     }
   };
 
   renderVersionDate = rowData => {
-    if (rowData.versionDate) {
-      return <span title={rowData.versionDate}>{rowData.versionDate}</span>;
+    if (rowData.modules_version_date) {
+      return (
+        <span title={rowData.versionHour}>{rowData.modules_version_date}</span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderPipeline = rowData => {
+    if (rowData.pipelines_display_name.length > 0) {
+      return (
+        <span title={rowData.pipelines_display_name}>
+          {rowData.pipelines_display_name}
+        </span>
+      );
     } else {
       return '-';
     }
   };
 
   renderOwner = rowData => {
-    if (rowData.owner) {
-      return <span title={rowData.owner}>{rowData.owner}</span>;
+    if (rowData.tguser_display_name) {
+      return (
+        <span title={rowData.tguser_display_name}>
+          {rowData.tguser_display_name}
+        </span>
+      );
     } else {
       return '-';
     }
@@ -257,10 +285,13 @@ class TableClasses extends React.PureComponent {
       totalCount,
       defaultColumnWidths,
       selection,
+      sorting,
     } = this.state;
 
     return (
       <Grid rows={data} columns={columns}>
+        <SearchState onValueChange={this.changeSearchValue} />
+        <SortingState sorting={sorting} onSortingChange={this.changeSorting} />
         <PagingState
           currentPage={currentPage}
           onCurrentPageChange={this.changeCurrentPage}
@@ -274,7 +305,10 @@ class TableClasses extends React.PureComponent {
         />
         <Table />
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
-        <TableHeaderRow cellComponent={tableHeaderRowCell} />
+        <TableHeaderRow
+          cellComponent={tableHeaderRowCell}
+          showSortingControls
+        />
         <TableColumnVisibility />
         <TableSelection
           selectByRowClick
@@ -283,6 +317,7 @@ class TableClasses extends React.PureComponent {
         />
         <PagingPanel pageSizes={pageSizes} />
         <Toolbar />
+        <SearchPanel />
         <ColumnChooser />
       </Grid>
     );
@@ -307,12 +342,12 @@ class TableClasses extends React.PureComponent {
     const { classes } = this.props;
 
     data.map(row => {
-      row.displayName = this.renderModule(row);
-      row.name = this.renderClass(row);
-      row.version = this.renderVersion(row);
-      row.versionDate = this.renderVersionDate(row);
-      row.pipeline = this.renderName(row);
-      row.owner = this.renderOwner(row);
+      row.modules_display_name = this.renderModule(row);
+      row.modules_name = this.renderName(row);
+      row.modules_version = this.renderVersion(row);
+      row.modules_version_date = this.renderVersionDate(row);
+      row.pipelines_display_name = this.renderPipeline(row);
+      row.tguser_display_name = this.renderOwner(row);
       return row;
     });
 
