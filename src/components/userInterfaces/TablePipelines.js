@@ -22,6 +22,9 @@ import {
   TableSelection,
   SearchPanel,
 } from '@devexpress/dx-react-grid-material-ui';
+import Tooltip from '@material-ui/core/Tooltip';
+import ArrowDownward from '@material-ui/icons/ArrowDownward';
+import ArrowUpward from '@material-ui/icons/ArrowUpward';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -36,6 +39,20 @@ const styles = {
     cursor: 'pointer',
     lineHeight: '1.3',
   },
+  invisibleButton: {
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+    color: 'rgba(0, 0, 0, 0.87)',
+    padding: 0,
+    fontSize: '1rem',
+    lineHeight: 1.75,
+    fontHeight: 500,
+    letterSpacing: '0.02857em',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    maxWidth: '100%',
+  },
 };
 
 const tableHeaderRowCell = ({ ...restProps }) => (
@@ -47,6 +64,29 @@ const tableHeaderRowCell = ({ ...restProps }) => (
     }}
   />
 );
+
+const SortingIcon = ({ direction }) => (
+  direction === 'asc'
+    ? <ArrowUpward style={{ fontSize: '18px' }} />
+    : <ArrowDownward style={{ fontSize: '18px' }} />
+);
+
+const SortLabel = ({ onSort, children, direction }) => {
+
+  return (
+    <Tooltip title={children.props.children}>
+      <span
+        onClick={onSort}
+        style={styles.invisibleButton}
+      >
+        {children}
+        {(direction && <SortingIcon direction={direction} />)}
+      </span>
+    </Tooltip>
+  );
+}
+
+
 
 class TablePipelines extends React.PureComponent {
   constructor(props) {
@@ -375,6 +415,7 @@ class TablePipelines extends React.PureComponent {
         <TableHeaderRow
           cellComponent={tableHeaderRowCell}
           showSortingControls
+          sortLabelComponent={SortLabel}
         />
         <TableColumnVisibility
           hiddenColumnNames={hiddenColumnNames}
