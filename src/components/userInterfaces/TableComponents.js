@@ -21,16 +21,58 @@ import {
   TableSelection,
   SearchPanel,
 } from '@devexpress/dx-react-grid-material-ui';
-
 import CircularProgress from '@material-ui/core/CircularProgress';
-
 import Centaurus from '../../api';
+import Tooltip from '@material-ui/core/Tooltip';
+import ArrowDownward from '@material-ui/icons/ArrowDownward';
+import ArrowUpward from '@material-ui/icons/ArrowUpward';
 
 const styles = {
   wrapPaper: {
     position: 'relative',
     paddingTop: '10px',
   },
+  invisibleButton: {
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+    color: 'rgba(0, 0, 0, 0.87)',
+    padding: 0,
+    fontSize: '1rem',
+    lineHeight: 1.75,
+    fontHeight: 500,
+    letterSpacing: '0.02857em',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    maxWidth: '100%',
+  },
+};
+
+const SortingIcon = ({ direction }) =>
+  direction === 'asc' ? (
+    <ArrowUpward style={{ fontSize: '18px' }} />
+  ) : (
+    <ArrowDownward style={{ fontSize: '18px' }} />
+  );
+
+const SortLabel = ({ onSort, children, direction }) => {
+  const _children = children.props.children;
+  const isSortingEnabled =
+    _children === 'Pipeline' || _children === 'Owner' ? false : true;
+
+  return (
+    <Tooltip title={children.props.children}>
+      <span
+        onClick={isSortingEnabled ? onSort : null}
+        style={
+          isSortingEnabled ? styles.invisibleButton : styles.disabledButton
+        }
+      >
+        {children}
+        {direction && <SortingIcon direction={direction} />}
+      </span>
+    </Tooltip>
+  );
 };
 
 const tableHeaderRowCell = ({ ...restProps }) => (
@@ -42,6 +84,16 @@ const tableHeaderRowCell = ({ ...restProps }) => (
     }}
   />
 );
+
+SortingIcon.propTypes = {
+  direction: PropTypes.string.isRequired,
+};
+
+SortLabel.propTypes = {
+  onSort: PropTypes.func.isRequired,
+  children: PropTypes.object.isRequired,
+  direction: PropTypes.string,
+};
 
 class TableClasses extends React.PureComponent {
   constructor(props) {
@@ -307,7 +359,8 @@ class TableClasses extends React.PureComponent {
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
         <TableHeaderRow
           cellComponent={tableHeaderRowCell}
-          showSortingControls
+          showSortingControls={false}
+          sortLabelComponent={SortLabel}
         />
         <TableColumnVisibility />
         <TableSelection

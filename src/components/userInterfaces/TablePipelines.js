@@ -22,6 +22,9 @@ import {
   TableSelection,
   SearchPanel,
 } from '@devexpress/dx-react-grid-material-ui';
+import Tooltip from '@material-ui/core/Tooltip';
+import ArrowDownward from '@material-ui/icons/ArrowDownward';
+import ArrowUpward from '@material-ui/icons/ArrowUpward';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -36,6 +39,34 @@ const styles = {
     cursor: 'pointer',
     lineHeight: '1.3',
   },
+  invisibleButton: {
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+    color: 'rgba(0, 0, 0, 0.87)',
+    padding: 0,
+    fontSize: '1rem',
+    lineHeight: 1.75,
+    fontHeight: 500,
+    letterSpacing: '0.02857em',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    maxWidth: '100%',
+  },
+  disabledButton: {
+    backgroundColor: 'transparent',
+    cursor: 'default',
+    color: 'rgb(85, 85, 85)',
+    padding: 0,
+    fontSize: '1rem',
+    lineHeight: 1.75,
+    fontHeight: 500,
+    letterSpacing: '0.02857em',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    maxWidth: '100%',
+  },
 };
 
 const tableHeaderRowCell = ({ ...restProps }) => (
@@ -47,6 +78,43 @@ const tableHeaderRowCell = ({ ...restProps }) => (
     }}
   />
 );
+
+const SortingIcon = ({ direction }) =>
+  direction === 'asc' ? (
+    <ArrowUpward style={{ fontSize: '18px' }} />
+  ) : (
+    <ArrowDownward style={{ fontSize: '18px' }} />
+  );
+
+const SortLabel = ({ onSort, children, direction }) => {
+  const _children = children.props.children;
+  const isSortingEnabled =
+    _children === 'User Manual' || _children === 'History' ? false : true;
+
+  return (
+    <Tooltip title={children.props.children}>
+      <span
+        onClick={isSortingEnabled ? onSort : null}
+        style={
+          isSortingEnabled ? styles.invisibleButton : styles.disabledButton
+        }
+      >
+        {children}
+        {direction && <SortingIcon direction={direction} />}
+      </span>
+    </Tooltip>
+  );
+};
+
+SortingIcon.propTypes = {
+  direction: PropTypes.string.isRequired,
+};
+
+SortLabel.propTypes = {
+  onSort: PropTypes.func.isRequired,
+  children: PropTypes.object.isRequired,
+  direction: PropTypes.string,
+};
 
 class TablePipelines extends React.PureComponent {
   constructor(props) {
@@ -63,7 +131,7 @@ class TablePipelines extends React.PureComponent {
         { name: 'grouppypelines_display_name', title: 'Group' },
         { name: 'pipelinestage_display_name', title: 'Stage' },
         { name: 'tguser_display_name', title: 'Owner' },
-        { name: 'btn_pipelines_readme', title: 'Description' },
+        { name: 'pipelines_readme', title: 'Description' },
         { name: 'user', title: 'User Manual' },
         { name: 'history', title: 'History' },
       ],
@@ -74,7 +142,7 @@ class TablePipelines extends React.PureComponent {
         { columnName: 'grouppypelines_display_name', width: 200 },
         { columnName: 'pipelinestage_display_name', width: 200 },
         { columnName: 'tguser_display_name', width: 200 },
-        { columnName: 'btn_pipelines_readme', width: 100 },
+        { columnName: 'pipelines_readme', width: 100 },
         { columnName: 'user', width: 100 },
         { columnName: 'history', width: 100 },
       ],
@@ -354,7 +422,7 @@ class TablePipelines extends React.PureComponent {
           sorting={sorting}
           onSortingChange={this.changeSorting}
           columnExtensions={[
-            { columnName: 'btn_pipelines_readme', sortingEnabled: false },
+            { columnName: 'pipelines_readme', sortingEnabled: false },
             { columnName: 'user', sortingEnabled: false },
             { columnName: 'history', sortingEnabled: false },
           ]}
@@ -375,6 +443,7 @@ class TablePipelines extends React.PureComponent {
         <TableHeaderRow
           cellComponent={tableHeaderRowCell}
           showSortingControls
+          sortLabelComponent={SortLabel}
         />
         <TableColumnVisibility
           hiddenColumnNames={hiddenColumnNames}
@@ -418,7 +487,7 @@ class TablePipelines extends React.PureComponent {
       row.tguser_display_name = this.renderOwner(row);
       row.grouppypelines_display_name = this.renderGroup(row);
       row.pipelinestage_display_name = this.renderStage(row);
-      row.btn_pipelines_readme = this.renderReadme(row);
+      row.pipelines_readme = this.renderReadme(row);
       row.user = this.renderUserManual(row);
       row.history = this.renderHistory(row);
       return row;
