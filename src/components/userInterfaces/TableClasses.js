@@ -48,26 +48,23 @@ const styles = {
   },
 };
 
-const SortingIcon = ({ direction }) => (
-  direction === 'asc'
-    ? <ArrowUpward style={{ fontSize: '18px' }} />
-    : <ArrowDownward style={{ fontSize: '18px' }} />
-);
+const SortingIcon = ({ direction }) =>
+  direction === 'asc' ? (
+    <ArrowUpward style={{ fontSize: '18px' }} />
+  ) : (
+    <ArrowDownward style={{ fontSize: '18px' }} />
+  );
 
 const SortLabel = ({ onSort, children, direction }) => {
-
   return (
     <Tooltip title={children.props.children}>
-      <span
-        onClick={onSort}
-        style={styles.invisibleButton}
-      >
+      <span onClick={onSort} style={styles.invisibleButton}>
         {children}
-        {(direction && <SortingIcon direction={direction} />)}
+        {direction && <SortingIcon direction={direction} />}
       </span>
     </Tooltip>
   );
-}
+};
 
 const tableHeaderRowCell = ({ ...restProps }) => (
   <TableHeaderRow.Cell
@@ -78,6 +75,16 @@ const tableHeaderRowCell = ({ ...restProps }) => (
     }}
   />
 );
+
+SortingIcon.propTypes = {
+  direction: PropTypes.string.isRequired,
+};
+
+SortLabel.propTypes = {
+  onSort: PropTypes.func.isRequired,
+  children: PropTypes.object.isRequired,
+  direction: PropTypes.string,
+};
 
 class TableClasses extends React.PureComponent {
   constructor(props) {
@@ -206,7 +213,6 @@ class TableClasses extends React.PureComponent {
 
   loadData = async () => {
     const { sorting, pageSize, after, searchValue } = this.state;
-
     const classes = await Centaurus.getAllClasses(
       sorting,
       pageSize,

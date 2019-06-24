@@ -48,26 +48,32 @@ const styles = {
   },
 };
 
-const SortingIcon = ({ direction }) => (
-  direction === 'asc'
-    ? <ArrowUpward style={{ fontSize: '18px' }} />
-    : <ArrowDownward style={{ fontSize: '18px' }} />
-);
+const SortingIcon = ({ direction }) =>
+  direction === 'asc' ? (
+    <ArrowUpward style={{ fontSize: '18px' }} />
+  ) : (
+    <ArrowDownward style={{ fontSize: '18px' }} />
+  );
 
 const SortLabel = ({ onSort, children, direction }) => {
+  const _children = children.props.children;
+  const isSortingEnabled =
+    _children === 'Pipeline' || _children === 'Owner' ? false : true;
 
   return (
     <Tooltip title={children.props.children}>
       <span
-        onClick={onSort}
-        style={styles.invisibleButton}
+        onClick={isSortingEnabled ? onSort : null}
+        style={
+          isSortingEnabled ? styles.invisibleButton : styles.disabledButton
+        }
       >
         {children}
-        {(direction && <SortingIcon direction={direction} />)}
+        {direction && <SortingIcon direction={direction} />}
       </span>
     </Tooltip>
   );
-}
+};
 
 const tableHeaderRowCell = ({ ...restProps }) => (
   <TableHeaderRow.Cell
@@ -78,6 +84,16 @@ const tableHeaderRowCell = ({ ...restProps }) => (
     }}
   />
 );
+
+SortingIcon.propTypes = {
+  direction: PropTypes.string.isRequired,
+};
+
+SortLabel.propTypes = {
+  onSort: PropTypes.func.isRequired,
+  children: PropTypes.object.isRequired,
+  direction: PropTypes.string,
+};
 
 class TableClasses extends React.PureComponent {
   constructor(props) {
@@ -343,7 +359,7 @@ class TableClasses extends React.PureComponent {
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
         <TableHeaderRow
           cellComponent={tableHeaderRowCell}
-          showSortingControls
+          showSortingControls={false}
           sortLabelComponent={SortLabel}
         />
         <TableColumnVisibility />
