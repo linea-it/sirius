@@ -63,7 +63,7 @@ class Footer extends Component {
         version = `${git_json.sha.substring(0, 7)}`;
         vlink = `${git_json.url.replace(/.git$/, '')}/commit/${git_json.sha}`;
       }
-    }  
+    }
 
     return (
       <footer className={classes.root}>
