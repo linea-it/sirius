@@ -16,7 +16,6 @@ import {
   TableColumnVisibility,
   PagingPanel,
   TableColumnResizing,
-  ColumnChooser,
   Toolbar,
   TableSelection,
   SearchPanel,
@@ -26,6 +25,7 @@ import Centaurus from '../../api';
 import Tooltip from '@material-ui/core/Tooltip';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
+import CustomColumnChooser from './CustomColumnChooser';
 
 const styles = {
   wrapPaper: {
@@ -470,7 +470,7 @@ class TablePipelines extends React.PureComponent {
         <PagingPanel pageSizes={pageSizes} />
         <Toolbar />
         <SearchPanel />
-        <ColumnChooser />
+        <CustomColumnChooser />
       </Grid>
     );
   };
