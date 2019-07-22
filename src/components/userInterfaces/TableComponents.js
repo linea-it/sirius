@@ -126,7 +126,7 @@ class TableClasses extends React.PureComponent {
       pageSizes: [5, 10, 15],
       currentPage: 0,
       loading: true,
-      after: 'YXJyYXljb25uZWN0aW9uOi0x',
+      after: '',
       selection: [],
       searchValue: '',
     };
