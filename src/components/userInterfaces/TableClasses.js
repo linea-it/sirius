@@ -167,6 +167,7 @@ class TableClasses extends React.PureComponent {
   };
 
   changeSearchValue = searchValue => {
+    this.clearData();
     this.setState(
       {
         loading: true,
@@ -208,6 +209,8 @@ class TableClasses extends React.PureComponent {
   clearData = () => {
     this.setState({
       data: [],
+      after: 'YXJyYXljb25uZWN0aW9uOi0x',
+      currentPage: 0,
     });
   };
 
