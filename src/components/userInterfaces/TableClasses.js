@@ -209,7 +209,7 @@ class TableClasses extends React.PureComponent {
   clearData = () => {
     this.setState({
       data: [],
-      after: 'YXJyYXljb25uZWN0aW9uOi0x',
+      after: '',
       currentPage: 0,
     });
   };
