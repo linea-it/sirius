@@ -212,6 +212,7 @@ class TablePipelines extends React.PureComponent {
   };
 
   changeSearchValue = searchValue => {
+    this.clearData();
     this.setState(
       {
         loading: true,
@@ -253,6 +254,8 @@ class TablePipelines extends React.PureComponent {
   clearData = () => {
     this.setState({
       data: [],
+      after: '',
+      currentPage: 0,
     });
   };
 

@@ -154,6 +154,7 @@ class TableClasses extends React.PureComponent {
     var offset = currentPage * this.state.pageSize;
 
     const after = window.btoa('arrayconnection:' + (offset - 1));
+
     this.setState(
       {
         loading: true,
@@ -168,7 +169,6 @@ class TableClasses extends React.PureComponent {
     const { totalCount, currentPage: stateCurrentPage } = this.state;
     const totalPages = Math.ceil(totalCount / pageSize);
     const currentPage = Math.min(stateCurrentPage, totalPages - 1);
-
     this.setState(
       {
         loading: true,
@@ -180,6 +180,7 @@ class TableClasses extends React.PureComponent {
   };
 
   changeSearchValue = searchValue => {
+    this.clearData();
     this.setState(
       {
         loading: true,
@@ -208,7 +209,6 @@ class TableClasses extends React.PureComponent {
       selection = [];
       selectedRow = null;
     }
-
     this.setState(
       {
         selection,
@@ -221,6 +221,8 @@ class TableClasses extends React.PureComponent {
   clearData = () => {
     this.setState({
       data: [],
+      after: '',
+      currentPage: 0,
     });
   };
 
