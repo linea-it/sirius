@@ -30,6 +30,7 @@ export default class Centaurus {
           totalCount
           edges {
             node {
+              pipelineId
               name
               displayName
               versionDate
@@ -49,7 +50,29 @@ export default class Centaurus {
       }
     `);
 
-      return pipelines;
+      const pipelinesWithClassesFunc = () => {
+        const promises = pipelines.pipelinesList.edges.map(async pipeline => {
+          const pipelineId = await pipeline.node.pipelineId;
+          const classes = await this.getClassesByPipeline(pipelineId);
+
+          return {
+            node: {
+              ...pipeline.node,
+              classes: { ...classes.inputClassesByPipeline.edges },
+            },
+          };
+        });
+        return Promise.all(promises);
+      };
+
+      const pipelinesWithClasses = await pipelinesWithClassesFunc();
+      return {
+        pipelinesList: {
+          edges: pipelinesWithClasses,
+          pageInfo: pipelines.pipelinesList.pageInfo,
+          totalCount: pipelines.pipelinesList.totalCount,
+        },
+      };
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
@@ -145,6 +168,30 @@ export default class Centaurus {
     }
   }
 
+  static async getClassesByPipeline(pipelineId) {
+    try {
+      const classes = await client.query(`
+        {
+          inputClassesByPipeline(pipelineId: ${pipelineId}) {
+            edges {
+              node {
+                displayName
+                moduleName
+                classes
+              }
+            }
+          }
+        }
+      `);
+
+      return classes;
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      return null;
+    }
+  }
+
   static async getAllFields(sorting, pageSize, after, searchValue) {
     const sort = `${sorting[0].columnName}_${sorting[0].direction}`;
     var strAfter = '';
@@ -167,7 +214,7 @@ export default class Centaurus {
                 fieldName
                 displayName
                 installDate
-                releaseDate              
+                releaseDate
                 startDate
                 discoveryDate
                 releaseTag{
@@ -175,7 +222,7 @@ export default class Centaurus {
                   version
                   releaseDisplayName
                 }
-                status                
+                status
               }
             }
           }

@@ -29,6 +29,9 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Centaurus from '../../api';
 import CustomColumnChooser from './CustomColumnChooser';
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import TableClasses from './TableClasses';
 
 const styles = {
   wrapPaper: {
@@ -127,6 +130,7 @@ class TablePipelines extends React.PureComponent {
       columns: [
         { name: 'pipelines_display_name', title: 'Pipeline' },
         { name: 'pipelines_name', title: 'Name' },
+        { name: 'pipelines_classes', title: 'Classes' },
         { name: 'pipelines_version_date', title: 'Version Date' },
         { name: 'grouppypelines_display_name', title: 'Group' },
         { name: 'pipelinestage_display_name', title: 'Stage' },
@@ -138,6 +142,7 @@ class TablePipelines extends React.PureComponent {
       defaultColumnWidths: [
         { columnName: 'pipelines_display_name', width: 200 },
         { columnName: 'pipelines_name', width: 200 },
+        { columnName: 'pipelines_classes', width: 200 },
         { columnName: 'pipelines_version_date', width: 200 },
         { columnName: 'grouppypelines_display_name', width: 200 },
         { columnName: 'pipelinestage_display_name', width: 200 },
@@ -157,6 +162,9 @@ class TablePipelines extends React.PureComponent {
       selection: [],
       searchValue: '',
       hiddenColumnNames: ['grouppypelines_display_name'],
+      visible: false,
+      modalType: '',
+      classesRows: [],
     };
   }
 
@@ -284,6 +292,7 @@ class TablePipelines extends React.PureComponent {
             : null,
           tguser_display_name: row.node.user ? row.node.user.displayName : null,
           pipelines_readme: row.node.readme,
+          pipelines_classes: row.node.classes,
         };
       });
       this.setState({
@@ -297,12 +306,54 @@ class TablePipelines extends React.PureComponent {
     }
   };
 
+  onHideModal = () => {
+    this.setState({ visible: false });
+  };
+
+  onShowClasses = rows => {
+    this.setState({
+      visible: true,
+      modalType: 'Classes',
+      classesRows: rows,
+    });
+  };
+
   renderPipeline = rowData => {
     if (rowData.pipelines_display_name) {
       return (
         <span title={rowData.pipelines_display_name}>
           {rowData.pipelines_display_name}
         </span>
+      );
+    } else {
+      return '-';
+    }
+  };
+
+  renderClasses = rowData => {
+    if (rowData.pipelines_classes) {
+      const pipeline = rowData.pipelines_display_name;
+      const classes = Object.values(rowData.pipelines_classes);
+      if (classes.length > 1) {
+        const rows = classes.map(el => ({
+          pipeline: pipeline,
+          class: el.node.displayName,
+        }));
+
+        return (
+          <React.Fragment>
+            <Button
+              style={styles.btnIco}
+              onClick={() => this.onShowClasses(rows)}
+            >
+              <Icon>format_list_bulleted</Icon>
+            </Button>
+          </React.Fragment>
+        );
+      }
+
+      return (
+        <span title={classes.node.displayName}>{classes.node.displayName}</span>
       );
     } else {
       return '-';
@@ -404,9 +455,21 @@ class TablePipelines extends React.PureComponent {
     }
   };
 
-  renderTable = () => {
+  renderModal = () => {
+    return (
+      <Dialog
+        onClose={this.onHideModal}
+        open={this.state.visible}
+        aria-labelledby={this.state.modalType}
+        maxWidth="sm"
+      >
+        <TableClasses classesRows={this.state.classesRows} />
+      </Dialog>
+    );
+  };
+
+  renderTable = rows => {
     const {
-      data,
       columns,
       pageSize,
       pageSizes,
@@ -419,49 +482,52 @@ class TablePipelines extends React.PureComponent {
     } = this.state;
 
     return (
-      <Grid rows={data} columns={columns}>
-        <SearchState onValueChange={this.changeSearchValue} />
-        <SortingState
-          sorting={sorting}
-          onSortingChange={this.changeSorting}
-          columnExtensions={[
-            { columnName: 'pipelines_readme', sortingEnabled: false },
-            { columnName: 'user', sortingEnabled: false },
-            { columnName: 'history', sortingEnabled: false },
-          ]}
-        />
-        <PagingState
-          currentPage={currentPage}
-          onCurrentPageChange={this.changeCurrentPage}
-          pageSize={pageSize}
-          onPageSizeChange={this.changePageSize}
-        />
-        <CustomPaging totalCount={totalCount} />
-        <SelectionState
-          selection={selection}
-          onSelectionChange={this.changeSelection}
-        />
-        <Table />
-        <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
-        <TableHeaderRow
-          cellComponent={tableHeaderRowCell}
-          showSortingControls
-          sortLabelComponent={SortLabel}
-        />
-        <TableColumnVisibility
-          hiddenColumnNames={hiddenColumnNames}
-          onHiddenColumnNamesChange={this.hiddenColumnNamesChange}
-        />
-        <TableSelection
-          selectByRowClick
-          highlightRow
-          showSelectionColumn={false}
-        />
-        <PagingPanel pageSizes={pageSizes} />
-        <Toolbar />
-        <SearchPanel />
-        <CustomColumnChooser />
-      </Grid>
+      <React.Fragment>
+        <Grid rows={rows} columns={columns}>
+          <SearchState onValueChange={this.changeSearchValue} />
+          <SortingState
+            sorting={sorting}
+            onSortingChange={this.changeSorting}
+            columnExtensions={[
+              { columnName: 'pipelines_readme', sortingEnabled: false },
+              { columnName: 'user', sortingEnabled: false },
+              { columnName: 'history', sortingEnabled: false },
+            ]}
+          />
+          <PagingState
+            currentPage={currentPage}
+            onCurrentPageChange={this.changeCurrentPage}
+            pageSize={pageSize}
+            onPageSizeChange={this.changePageSize}
+          />
+          <CustomPaging totalCount={totalCount} />
+          <SelectionState
+            selection={selection}
+            onSelectionChange={this.changeSelection}
+          />
+          <Table />
+          <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
+          <TableHeaderRow
+            cellComponent={tableHeaderRowCell}
+            showSortingControls
+            sortLabelComponent={SortLabel}
+          />
+          <TableColumnVisibility
+            hiddenColumnNames={hiddenColumnNames}
+            onHiddenColumnNamesChange={this.hiddenColumnNamesChange}
+          />
+          <TableSelection
+            selectByRowClick
+            highlightRow
+            showSelectionColumn={false}
+          />
+          <PagingPanel pageSizes={pageSizes} />
+          <Toolbar />
+          <SearchPanel />
+          <CustomColumnChooser />
+        </Grid>
+        {this.renderModal()}
+      </React.Fragment>
     );
   };
 
@@ -482,23 +548,22 @@ class TablePipelines extends React.PureComponent {
   render() {
     const { loading, data } = this.state;
     const { classes } = this.props;
-
-    data.map(row => {
-      row.pipelines_display_name = this.renderPipeline(row);
-      row.pipelines_name = this.renderName(row);
-      row.pipelines_version_date = this.renderVersion(row);
-      row.tguser_display_name = this.renderOwner(row);
-      row.grouppypelines_display_name = this.renderGroup(row);
-      row.pipelinestage_display_name = this.renderStage(row);
-      row.pipelines_readme = this.renderReadme(row);
-      row.user = this.renderUserManual(row);
-      row.history = this.renderHistory(row);
-      return row;
-    });
+    const rows = data.map(row => ({
+      pipelines_display_name: this.renderPipeline(row),
+      pipelines_name: this.renderName(row),
+      pipelines_classes: this.renderClasses(row),
+      pipelines_version_date: this.renderVersion(row),
+      tguser_display_name: this.renderOwner(row),
+      grouppypelines_display_name: this.renderGroup(row),
+      pipelinestage_display_name: this.renderStage(row),
+      pipelines_readme: this.renderReadme(row),
+      user: this.renderUserManual(row),
+      history: this.renderHistory(row),
+    }));
 
     return (
       <Paper className={classes.wrapPaper}>
-        {this.renderTable()}
+        {this.renderTable(rows)}
         {loading && this.renderLoading()}
       </Paper>
     );
