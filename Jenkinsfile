@@ -4,19 +4,13 @@ pipeline {
         registryCredential = 'Dockerhub'
         dockerImage = ''
         deployment = 'sirius'
-        namespace = 'scienceportal-dev'
-        namespace_prod = 'scienceportal'
+        namespace = 'sirius'
+        namespace_prod = 'sirius'
+        commit = ''
     }
     agent any
 
     stages {
-        stage('Test') {
-            steps {
-                sh 'yarn install'
-                sh 'yarn lint'
-                sh 'yarn test'
-            }
-        }
         stage('Creating version.json') {
             steps {
                 sh './version.sh && cat ./src/assets/json/version.json'
@@ -44,8 +38,8 @@ pipeline {
                   curl -D - -X \"POST\" \
                     -H \"content-type: application/json\" \
                     -H \"X-Rundeck-Auth-Token: $RD_AUTH_TOKEN\" \
-                    -d '{\"argString\": \"-namespace $namespace -image $registry:$GIT_COMMIT -deployment $deployment\"}' \
-                    https://fox.linea.gov.br/api/1/job/e79ea1f7-e156-4992-98b6-75995ac4c15a/executions
+                    -d '{\"argString\": \"-namespace $namespace -commit $GIT_COMMIT -image $registry:$GIT_COMMIT -deployment $deployment\"}' \
+                    https://fox.linea.gov.br/api/1/job/82aef3c2-9fe3-4450-9400-83087e03d69b/executions
                   """
             }
         }
@@ -68,8 +62,8 @@ pipeline {
                   curl -D - -X \"POST\" \
                     -H \"content-type: application/json\" \
                     -H \"X-Rundeck-Auth-Token: $RD_AUTH_TOKEN\" \
-                    -d '{\"argString\": \"-namespace $namespace_prod -image $registry:$TAG_NAME -deployment $deployment\"}' \
-                    https://fox.linea.gov.br/api/1/job/e79ea1f7-e156-4992-98b6-75995ac4c15a/executions
+                    -d '{\"argString\": \"-namespace $namespace_prod -commit $TAG_NAME -image $registry:$TAG_NAME -deployment $deployment\"}' \
+                    https://fox.linea.gov.br/api/1/job/82aef3c2-9fe3-4450-9400-83087e03d69b/executions
                   """
             }
         }
