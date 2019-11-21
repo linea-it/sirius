@@ -26,6 +26,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import CustomColumnChooser from './CustomColumnChooser';
+import moment from 'moment';
 
 const styles = {
   wrapPaper: {
@@ -243,10 +244,10 @@ class TableClasses extends React.PureComponent {
           modules_name: row.node.name,
           modules_version: row.node.version,
           modules_version_date: row.node.versionDate
-            ? row.node.versionDate.split('T')[0]
+            ? moment(row.node.versionDate).format('YYYY-MM-DD')
             : null,
           versionHour: row.node.versionDate
-            ? row.node.versionDate.split('T')[1]
+            ? moment(row.node.versionDate).format('HH:mm:ss')
             : null,
           pipelines_display_name: row.node.pipelinesModules.edges.map(edge => {
             return edge.node.pipeline.displayName;

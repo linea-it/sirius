@@ -24,14 +24,13 @@ import {
 import Tooltip from '@material-ui/core/Tooltip';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
-
 import CircularProgress from '@material-ui/core/CircularProgress';
-
 import Centaurus from '../../api';
 import CustomColumnChooser from './CustomColumnChooser';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
-import TableClasses from './TableClasses';
+import SubtableClasses from './SubtableClasses';
+import moment from 'moment';
 
 const styles = {
   wrapPaper: {
@@ -282,8 +281,12 @@ class TablePipelines extends React.PureComponent {
         return {
           pipelines_display_name: row.node.displayName,
           pipelines_name: row.node.name,
-          pipelines_version_date: row.node.versionDate.split('T')[0],
-          pipelines_version_hour: row.node.versionDate.split('T')[1],
+          pipelines_version_date: moment(row.node.versionDate).format(
+            'YYYY-MM-DD'
+          ),
+          pipelines_version_hour: moment(row.node.versionDate).format(
+            'HH:mm:ss'
+          ),
           grouppypelines_display_name: row.node.group
             ? row.node.group.displayName
             : null,
@@ -292,7 +295,7 @@ class TablePipelines extends React.PureComponent {
             : null,
           tguser_display_name: row.node.user ? row.node.user.displayName : null,
           pipelines_readme: row.node.readme,
-          pipelines_classes: row.node.classes,
+          pipelines_classes: row.node.products,
         };
       });
       this.setState({
@@ -463,7 +466,7 @@ class TablePipelines extends React.PureComponent {
         aria-labelledby={this.state.modalType}
         maxWidth="sm"
       >
-        <TableClasses classesRows={this.state.classesRows} />
+        <SubtableClasses classesRows={this.state.classesRows} />
       </Dialog>
     );
   };

@@ -50,25 +50,25 @@ export default class Centaurus {
       }
     `);
 
-      const pipelinesWithClassesFunc = () => {
+      const pipelinesWithProductsFunc = () => {
         const promises = pipelines.pipelinesList.edges.map(async pipeline => {
           const pipelineId = await pipeline.node.pipelineId;
-          const classes = await this.getClassesByPipeline(pipelineId);
+          const products = await this.getProductsByPipeline(pipelineId);
 
           return {
             node: {
               ...pipeline.node,
-              classes: { ...classes.inputClassesByPipeline.edges },
+              products: { ...products.inputProductsByPipeline.edges },
             },
           };
         });
         return Promise.all(promises);
       };
 
-      const pipelinesWithClasses = await pipelinesWithClassesFunc();
+      const pipelinesWithProducts = await pipelinesWithProductsFunc();
       return {
         pipelinesList: {
-          edges: pipelinesWithClasses,
+          edges: pipelinesWithProducts,
           pageInfo: pipelines.pipelinesList.pageInfo,
           totalCount: pipelines.pipelinesList.totalCount,
         },
@@ -130,7 +130,9 @@ export default class Centaurus {
   }
 
   static async getAllClasses(sorting, pageSize, after, searchValue) {
-    const sort = `${sorting[0].columnName}_${sorting[0].direction}`;
+    const sort = sorting
+      ? `${sorting[0].columnName}_${sorting[0].direction}`
+      : '';
     var strAfter = '';
 
     if (after !== null) {
@@ -168,23 +170,23 @@ export default class Centaurus {
     }
   }
 
-  static async getClassesByPipeline(pipelineId) {
+  static async getProductsByPipeline(pipelineId) {
     try {
-      const classes = await client.query(`
+      const products = await client.query(`
         {
-          inputClassesByPipeline(pipelineId: ${pipelineId}) {
+          inputProductsByPipeline(pipelineId: ${pipelineId}) {
             edges {
               node {
                 displayName
                 moduleName
-                classes
+                products
               }
             }
           }
         }
       `);
 
-      return classes;
+      return products;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
