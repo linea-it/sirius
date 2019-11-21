@@ -7,7 +7,7 @@ pipeline {
         namespace = 'sirius'
         namespace_prod = 'sirius'
         commit = ''
-    }
+    } 
     agent any
 
     stages {
