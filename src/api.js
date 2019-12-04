@@ -44,6 +44,8 @@ export default class Centaurus {
                 displayName
               }
               readme
+              userManual
+              pipelineHistory
             }
           }
         }

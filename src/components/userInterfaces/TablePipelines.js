@@ -89,9 +89,9 @@ const SortingIcon = ({ direction }) =>
   );
 
 const SortLabel = ({ onSort, children, direction }) => {
-  const _children = children.props.children;
-  const isSortingEnabled =
-    _children === 'User Manual' || _children === 'History' ? false : true;
+  // const _children = children.props.children;
+  const isSortingEnabled = true;
+  // _children === 'User Manual' || _children === 'History' ? false : true;
 
   return (
     <Tooltip title={children.props.children}>
@@ -135,8 +135,8 @@ class TablePipelines extends React.PureComponent {
         { name: 'pipelinestage_display_name', title: 'Stage' },
         { name: 'tguser_display_name', title: 'Owner' },
         { name: 'pipelines_readme', title: 'Description' },
-        { name: 'user', title: 'User Manual' },
-        { name: 'history', title: 'History' },
+        { name: 'pipelines_user_manual', title: 'User Manual' },
+        { name: 'pipelines_pipeline_history', title: 'History' },
       ],
       defaultColumnWidths: [
         { columnName: 'pipelines_display_name', width: 200 },
@@ -147,8 +147,8 @@ class TablePipelines extends React.PureComponent {
         { columnName: 'pipelinestage_display_name', width: 200 },
         { columnName: 'tguser_display_name', width: 200 },
         { columnName: 'pipelines_readme', width: 100 },
-        { columnName: 'user', width: 100 },
-        { columnName: 'history', width: 100 },
+        { columnName: 'pipelines_user_manual', width: 100 },
+        { columnName: 'pipelines_pipeline_history', width: 100 },
       ],
       data: [],
       sorting: [{ columnName: 'pipelines_display_name', direction: 'desc' }],
@@ -296,6 +296,8 @@ class TablePipelines extends React.PureComponent {
           tguser_display_name: row.node.user ? row.node.user.displayName : null,
           pipelines_readme: row.node.readme,
           pipelines_classes: row.node.products,
+          pipelines_user_manual: row.node.pipelines_user_manual,
+          pipelines_pipeline_history: row.node.pipelines_pipeline_history,
         };
       });
       this.setState({
@@ -422,16 +424,24 @@ class TablePipelines extends React.PureComponent {
   };
 
   renderUserManual = rowData => {
-    if (rowData.user) {
-      return <span title={rowData.user}>{rowData.user}</span>;
+    if (rowData.pipelines_user_manual) {
+      return (
+        <span title={rowData.pipelines_user_manual}>
+          {rowData.pipelines_user_manual}
+        </span>
+      );
     } else {
       return '-';
     }
   };
 
   renderHistory = rowData => {
-    if (rowData.history) {
-      return <span title={rowData.history}>{rowData.history}</span>;
+    if (rowData.pipelines_pipeline_history) {
+      return (
+        <span title={rowData.pipelines_pipeline_history}>
+          {rowData.pipelines_pipeline_history}
+        </span>
+      );
     } else {
       return '-';
     }
@@ -491,11 +501,6 @@ class TablePipelines extends React.PureComponent {
           <SortingState
             sorting={sorting}
             onSortingChange={this.changeSorting}
-            columnExtensions={[
-              { columnName: 'pipelines_readme', sortingEnabled: false },
-              { columnName: 'user', sortingEnabled: false },
-              { columnName: 'history', sortingEnabled: false },
-            ]}
           />
           <PagingState
             currentPage={currentPage}
@@ -560,8 +565,8 @@ class TablePipelines extends React.PureComponent {
       grouppypelines_display_name: this.renderGroup(row),
       pipelinestage_display_name: this.renderStage(row),
       pipelines_readme: this.renderReadme(row),
-      user: this.renderUserManual(row),
-      history: this.renderHistory(row),
+      pipelines_user_manual: this.renderUserManual(row),
+      pipelines_pipeline_history: this.renderHistory(row),
     }));
 
     return (
