@@ -91,7 +91,11 @@ const SortingIcon = ({ direction }) =>
 const SortLabel = ({ onSort, children, direction }) => {
   const _children = children.props.children;
   const isSortingEnabled =
-    _children === 'User Manual' || _children === 'History' ? false : true;
+    _children === 'User Manual' ||
+    _children === 'Classes' ||
+    _children === 'History'
+      ? false
+      : true;
 
   return (
     <Tooltip title={children.props.children}>
@@ -493,6 +497,7 @@ class TablePipelines extends React.PureComponent {
             onSortingChange={this.changeSorting}
             columnExtensions={[
               { columnName: 'pipelines_readme', sortingEnabled: false },
+              { columnName: 'pipelines_classes', sortingEnabled: false },
               { columnName: 'user', sortingEnabled: false },
               { columnName: 'history', sortingEnabled: false },
             ]}

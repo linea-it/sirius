@@ -57,9 +57,10 @@ const SortingIcon = ({ direction }) =>
   );
 
 const SortLabel = ({ onSort, children, direction }) => {
-  const _children = children.props.children;
-  const isSortingEnabled =
-    _children === 'Pipeline' || _children === 'Owner' ? false : true;
+  // const _children = children.props.children;
+  // const isSortingEnabled =
+  //   _children === 'Pipeline' || _children === 'Owner' ? false : true;
+  const isSortingEnabled = true;
 
   return (
     <Tooltip title={children.props.children}>
@@ -362,7 +363,7 @@ class TableClasses extends React.PureComponent {
         <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
         <TableHeaderRow
           cellComponent={tableHeaderRowCell}
-          showSortingControls={false}
+          showSortingControls={true}
           sortLabelComponent={SortLabel}
         />
         <TableColumnVisibility />
