@@ -7,17 +7,28 @@ import {
   PagingPanel,
   TableHeaderRow,
 } from '@devexpress/dx-react-grid-material-ui';
+import moment from 'moment';
 
 export default class SubtableClasses extends Component {
   constructor(props) {
     super(props);
 
+    // { name: 'pipeline', title: 'Pipeline' },
     this.state = {
       columns: [
-        { name: 'pipeline', title: 'Pipeline' },
         { name: 'class', title: 'Class' },
+        { name: 'name', title: 'Name' },
+        { name: 'version', title: 'Version' },
+        { name: 'versionDate', title: 'Version Date' },
       ],
-      rows: this.props.classesRows,
+      rows: this.props.classesRows.map(row => ({
+        ...row,
+        versionDate: (
+          <span title={moment(row.versionDate).format('HH:mm:ss')}>
+            {moment(row.versionDate).format('YYYY-MM-DD')}
+          </span>
+        ),
+      })),
       pageSize: 10,
       pageSizes: [5, 10, 15],
     };

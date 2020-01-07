@@ -29,6 +29,7 @@ import Centaurus from '../../api';
 import CustomColumnChooser from './CustomColumnChooser';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import SubtableClasses from './SubtableClasses';
 import moment from 'moment';
 
@@ -318,7 +319,7 @@ class TablePipelines extends React.PureComponent {
   onShowClasses = rows => {
     this.setState({
       visible: true,
-      modalType: 'Classes',
+      modalType: rows[0].pipeline,
       classesRows: rows,
     });
   };
@@ -336,13 +337,16 @@ class TablePipelines extends React.PureComponent {
   };
 
   renderClasses = rowData => {
-    if (rowData.pipelines_classes) {
-      const pipeline = rowData.pipelines_display_name;
-      const classes = Object.values(rowData.pipelines_classes);
-      if (classes.length > 1) {
+    const classes = Object.values(rowData.pipelines_classes);
+    if (rowData.pipelines_classes && rowData.pipelines_classes[0]) {
+      if (classes.length >= 1) {
+        const pipeline = rowData.pipelines_display_name;
         const rows = classes.map(el => ({
           pipeline: pipeline,
           class: el.node.displayName,
+          name: el.node.moduleName,
+          version: el.node.version,
+          versionDate: el.node.versionDate,
         }));
 
         return (
@@ -476,6 +480,7 @@ class TablePipelines extends React.PureComponent {
         aria-labelledby={this.state.modalType}
         maxWidth="sm"
       >
+        <DialogTitle>{this.state.modalType}</DialogTitle>
         <SubtableClasses classesRows={this.state.classesRows} />
       </Dialog>
     );
