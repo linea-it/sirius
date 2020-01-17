@@ -130,7 +130,7 @@ class TablePipelines extends React.PureComponent {
       columns: [
         { name: 'pipelines_display_name', title: 'Pipeline' },
         { name: 'pipelines_name', title: 'Name' },
-        { name: 'pipelines_classes', title: 'Classes' },
+        { name: 'pipelines_classes', title: 'Inputs' },
         { name: 'pipelines_version_date', title: 'Version Date' },
         { name: 'grouppypelines_display_name', title: 'Group' },
         { name: 'pipelinestage_display_name', title: 'Stage' },
@@ -347,6 +347,7 @@ class TablePipelines extends React.PureComponent {
           name: el.node.moduleName,
           version: el.node.version,
           versionDate: el.node.versionDate,
+          products: el.node.products,
         }));
 
         return (
@@ -518,7 +519,11 @@ class TablePipelines extends React.PureComponent {
             selection={selection}
             onSelectionChange={this.changeSelection}
           />
-          <Table />
+          <Table
+            columnExtensions={[
+              { columnName: 'pipelines_classes', align: 'center' },
+            ]}
+          />
           <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
           <TableHeaderRow
             cellComponent={tableHeaderRowCell}

@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { PagingState, IntegratedPaging } from '@devexpress/dx-react-grid';
+import {
+  PagingState,
+  IntegratedPaging,
+} from '@devexpress/dx-react-grid';
 import {
   Grid,
   Table,
@@ -13,22 +16,23 @@ export default class SubtableClasses extends Component {
   constructor(props) {
     super(props);
 
-    // { name: 'pipeline', title: 'Pipeline' },
     this.state = {
       columns: [
         { name: 'class', title: 'Class' },
         { name: 'name', title: 'Name' },
         { name: 'version', title: 'Version' },
-        { name: 'versionDate', title: 'Version Date' },
+        {
+          name: 'versionDate',
+          title: 'Version Date',
+          getCellValue: row => (
+            <span title={moment(row.versionDate).format('HH:mm:ss')}>
+              {moment(row.versionDate).format('YYYY-MM-DD')}
+            </span>
+          ),
+        },
+        { name: 'products', title: 'Products' },
       ],
-      rows: this.props.classesRows.map(row => ({
-        ...row,
-        versionDate: (
-          <span title={moment(row.versionDate).format('HH:mm:ss')}>
-            {moment(row.versionDate).format('YYYY-MM-DD')}
-          </span>
-        ),
-      })),
+      rows: this.props.classesRows,
       pageSize: 10,
       pageSizes: [5, 10, 15],
     };
@@ -38,8 +42,14 @@ export default class SubtableClasses extends Component {
     classesRows: PropTypes.array.isRequired,
   };
 
+  // componentDidMount() {
+  //   console.log(this.props)
+  // }
+
   render() {
     const { rows, columns, pageSize, pageSizes } = this.state;
+
+    console.log(rows);
 
     return (
       <Grid rows={rows} columns={columns}>
