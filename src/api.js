@@ -181,6 +181,8 @@ export default class Centaurus {
               node {
                 displayName
                 moduleName
+                version
+                versionDate
                 products
               }
             }
