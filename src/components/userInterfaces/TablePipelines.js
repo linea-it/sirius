@@ -32,6 +32,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import SubtableClasses from './SubtableClasses';
 import moment from 'moment';
+import CloseModal from '../CloseModal';
 
 const styles = {
   wrapPaper: {
@@ -481,7 +482,10 @@ class TablePipelines extends React.PureComponent {
         aria-labelledby={this.state.modalType}
         maxWidth="sm"
       >
-        <DialogTitle>{this.state.modalType}</DialogTitle>
+        <DialogTitle>
+          {this.state.modalType}
+          <CloseModal callbackParent={bool => this.onHideModal(bool)} />
+        </DialogTitle>
         <SubtableClasses classesRows={this.state.classesRows} />
       </Dialog>
     );
