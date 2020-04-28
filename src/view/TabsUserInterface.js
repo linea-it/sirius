@@ -4,10 +4,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-import TablePipelines from './userInterfaces/TablePipelines';
-import TableComponents from './userInterfaces/TableComponents';
-import TableClasses from './userInterfaces/TableClasses';
-import TableReleases from './userInterfaces/TableReleases';
+import TablePipelines from '../components/userInterfaces/TablePipelines';
+import TableComponents from '../components/userInterfaces/TableComponents';
+import TableClasses from '../components/userInterfaces/TableClasses';
 // import TablePackages from './userInterfaces/TablePackages';
 
 function TabContainer(props) {
@@ -74,9 +73,6 @@ class SimpleTabs extends React.Component {
           <Tab label="Components" />
           <Tab label="Packages" disabled />
           <Tab label="Classes" />
-          <Tab label="Datasets" />
-          <Tab label="External Dataset" disabled />
-          <Tab label="Simulations" disabled />
         </Tabs>
         {value === 0 && (
           <TabContainer className={classes.tab}>
@@ -96,21 +92,6 @@ class SimpleTabs extends React.Component {
         {value === 3 && (
           <TabContainer className={classes.tab}>
             <TableClasses />
-          </TabContainer>
-        )}
-        {value === 4 && (
-          <TabContainer className={classes.tab}>
-            <TableReleases />
-          </TabContainer>
-        )}
-        {value === 5 && (
-          <TabContainer className={classes.tab}>
-            {/* <TableRelease /> */}
-          </TabContainer>
-        )}
-        {value === 6 && (
-          <TabContainer className={classes.tab}>
-            {/* <TableSimulations /> */}
           </TabContainer>
         )}
       </div>
