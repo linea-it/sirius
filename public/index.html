@@ -24,7 +24,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>Portal User Interfaces</title>
+    <title id="title">Portal </title>
     <script src="%PUBLIC_URL%/env-config.js"></script>
   </head>
   <body>
@@ -41,4 +41,7 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+  <script>
+    document.getElementById("title").innerHTML = window.location.pathname == '/user-interface/' ? 'User Interface' : 'Dataset';
+  </script>
 </html>
