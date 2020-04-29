@@ -42,6 +42,7 @@
     -->
   </body>
   <script>
-    document.getElementById("title").innerHTML = window.location.pathname == '/user-interface/' ? 'Developer Interface' : 'Dataset';
+    console.log(window.location.pathname.includes("datasets"));
+    document.getElementById("title").innerHTML = window.location.pathname.includes("datasets") ? 'Dataset' : 'Developer Interface';
   </script>
 </html>
