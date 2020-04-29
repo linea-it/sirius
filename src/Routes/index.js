@@ -12,9 +12,8 @@ function Router() {
     <BrowserRouter>
       <Header />
       <Switch>
-        <Route exact path="/user-interface" component={MainUserInterface} />
-        <Route path="/datasets" component={MainDataSet} />
-        <Route component={MainDataSet} />
+        <Route exact path="/" component={MainUserInterface} />
+        <Route exact path="/datasets" component={MainDataSet} />
       </Switch>
       <Footer />
     </BrowserRouter>
