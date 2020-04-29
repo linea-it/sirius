@@ -1,7 +1,14 @@
+/* eslint-disable prettier/prettier */
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import { AppBar, Toolbar, Typography, IconButton, Button } from '@material-ui/core';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Button,
+} from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
 import Logo from '../assets/img/icon-des.png';
 
@@ -47,7 +54,7 @@ class Header extends React.Component {
             </IconButton>
 
             <Typography variant="h6" color="inherit">
-              User Interface
+              {window.location.pathname == '/user-interface/' ? 'User Interface' : 'Dataset'}
             </Typography>
             <div className={classes.separatorToolBar} />
             <Button

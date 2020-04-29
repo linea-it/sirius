@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import SimpleTabs from '../components/Tabs.js';
+import SimpleTabs from '../view/TabsUserInterface.js';
 
 const styles = {
   root: {
