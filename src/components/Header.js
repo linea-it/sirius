@@ -54,7 +54,7 @@ class Header extends React.Component {
             </IconButton>
 
             <Typography variant="h6" color="inherit">
-              {window.location.pathname == '/user-interface/' ? 'User Interface' : 'Dataset'}
+              {window.location.pathname == '/user-interface/' ? 'Developer Interface' : 'Dataset'}
             </Typography>
             <div className={classes.separatorToolBar} />
             <Button
