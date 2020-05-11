@@ -1,6 +1,5 @@
 {
-  "name": "portal-user-interface",
-  "homepage": "http://localhost/user-interface",
+  "name": "developer-interface",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -31,8 +30,6 @@
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-react": "^7.12.4",
-    "jest": "^23.6.0",
-    "jest-transform-stub": "^2.0.0",
     "prettier": "^1.16.4",
     "react-scripts": "^2.1.8"
   },
@@ -41,21 +38,7 @@
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "lint": "eslint .",
-    "lint-fix": "eslint --fix .",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "dev": "chmod +x ./env.sh && ./env.sh && mv env-config.js ./public/ && react-scripts start"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "jest": {
-    "setupFiles": [
-      "./setup-jest.js"
-    ],
-    "moduleNameMapper": {
-      ".+\\.(svg|css|png|jpeg)$": "jest-transform-stub"
-    }
+    "lint-fix": "eslint --fix ."
   },
   "browserslist": [
     ">0.2%",

@@ -44,10 +44,7 @@ class Footer extends Component {
   render() {
     const { classes } = this.props;
 
-    const instance =
-      process.env.NODE_ENV === 'production'
-        ? window._env_.REACT_APP_INSTANCE
-        : process.env.REACT_APP_INSTANCE;
+    const instance = process.env.REACT_APP_INSTANCE;
 
     let version = '--';
     let vlink = null;
