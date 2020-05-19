@@ -1,5 +1,6 @@
 {
   "name": "developer-interface",
+  "homepage": "http://localhost/developer-interface",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
