@@ -1,12 +1,16 @@
 import React from 'react';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import theme from './theme/MaterialTheme';
-import Router from './Routes';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import TabsUserInterface from './view/TabsUserInterface';
 
 function App() {
   return (
     <MuiThemeProvider theme={theme}>
-      <Router />
+      <Header />
+      <TabsUserInterface />
+      <Footer />
     </MuiThemeProvider>
   );
 }

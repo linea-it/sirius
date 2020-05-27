@@ -16,8 +16,7 @@
     "lokka-transport-http": "^1.6.1",
     "moment": "^2.24.0",
     "react": "^16.8.3",
-    "react-dom": "^16.8.3",
-    "react-router-dom": "^5.1.2"
+    "react-dom": "^16.8.3"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
