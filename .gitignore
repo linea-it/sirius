@@ -54,15 +54,9 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env
-
 # next.js build output
 .next
 
 package-lock.json
 
 docker-compose.yml
-
-.env
-yarn.lock
