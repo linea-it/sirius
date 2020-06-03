@@ -1,4 +1,5 @@
 
+# React
 FROM node:8.10 as builder
 COPY . /src/app
 WORKDIR /src/app
@@ -13,7 +14,6 @@ COPY --from=builder /src/app/build /var/www/developer-interface
 RUN chgrp nginx /var/www/developer-interface
 RUN chmod -R g+w /var/www/developer-interface
 COPY nginx-proxy.conf /etc/nginx/conf.d/default.conf
-
 
 
 # RUNTIME ENV
